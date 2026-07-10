@@ -1,0 +1,26 @@
+{
+  "name": "central-ht",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Central do Aluno HT (Holding Total) — captacao + gamificacao",
+  "type": "module",
+  "main": "app.js",
+  "engines": {
+    "node": ">=18.18"
+  },
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "concurrently -n API,WEB -c yellow,cyan \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm --workspace server run dev",
+    "dev:web": "npm --workspace client run dev",
+    "build": "npm --workspace client run build",
+    "postinstall": "npm run build",
+    "start": "node app.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
