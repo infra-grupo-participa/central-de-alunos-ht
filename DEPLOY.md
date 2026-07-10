@@ -58,21 +58,27 @@ HOTMART_HOTTOK=
 
 ## 5. Instalar e iniciar
 
-Na tela do app, clique em **Run NPM Install**. Isso:
-1. instala `server` + `client` (workspaces);
-2. roda o `postinstall`, que **builda o client** para `client/dist`.
+Na tela do app, clique em **Run NPM Install** (instala as dependências) e depois
+em **Restart**. Pronto: `https://central.holdingtotal.com.br`.
 
-Depois clique em **Restart**. Pronto: `https://central.holdingtotal.com.br`.
-
-> O `vite` está em `dependencies` (não devDependencies) de propósito, para o
-> build funcionar mesmo com a instalação em modo produção.
+> **O build do client NÃO é feito no servidor.** O `client/dist` já vem pronto,
+> versionado no repositório. A Hostinger só precisa instalar as dependências e
+> subir o `app.js` — nada de rodar `vite` na LVE (evita erros de memória e de
+> `postinstall` no shared hosting).
 
 ## 6. Redeploy (a cada atualização)
 
+O build é feito **localmente antes de subir**. No seu computador:
+
 ```bash
-git pull
+npm run build          # gera client/dist atualizado
+git add client/dist    # versiona o novo build
+git commit -m "build"
+git push
 ```
-→ **Run NPM Install** (rebuilda o client) → **Restart**.
+
+Depois, na Hostinger: `git pull` → **Restart** (não precisa nem rodar NPM Install
+de novo se as dependências não mudaram).
 
 ## Como o app serve tudo
 

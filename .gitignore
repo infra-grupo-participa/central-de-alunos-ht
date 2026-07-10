@@ -1,7 +1,7 @@
 node_modules/
-dist/
 .env
 .env.local
 *.log
 .DS_Store
-client/dist/
+# client/dist é versionado de proposito: o build é feito localmente e commitado,
+# para o deploy na Hostinger NAO precisar rodar o vite no servidor.
