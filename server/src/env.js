@@ -6,11 +6,16 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // .env na raiz do repo (ignorado se as vars ja vierem do ambiente, ex.: Hostinger)
 config({ path: resolve(__dirname, '../../.env') });
 
+// Valores publicos (URL do projeto + chave publishable) tem default embutido —
+// assim o app sobe mesmo sem env configurado. Os SECRETOS (service_role e
+// DATABASE_URL) nao tem default: sem eles, o app roda em modo degradado
+// (front/login no ar; funcoes de banco respondem erro claro ate serem setadas).
 export const env = {
   port: Number(process.env.PORT || 8787),
   nodeEnv: process.env.NODE_ENV || 'development',
-  supabaseUrl: process.env.SUPABASE_URL,
-  supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
+  supabaseUrl: process.env.SUPABASE_URL || 'https://mbvybujpkwuorhtdzcde.supabase.co',
+  supabaseAnonKey:
+    process.env.SUPABASE_ANON_KEY || 'sb_publishable_ZCwMkDCoJ5_H7DHZ476TsQ_CesBbG9J',
   supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   databaseUrl: process.env.DATABASE_URL,
   adminEmails: (process.env.ADMIN_EMAILS || '')
@@ -25,17 +30,20 @@ export const env = {
 
 export const isProd = env.nodeEnv === 'production';
 
-// Falha cedo e com clareza se faltar configuracao essencial (evita stack
-// trace obscuro do supabase-js/pg la na frente). Ajuste no painel da Hostinger
-// (variaveis de ambiente) ou no arquivo .env local.
-const REQUIRED = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'DATABASE_URL'];
-const missing = REQUIRED.filter((k) => !process.env[k]);
-if (missing.length) {
-  console.error(
-    '\n[Central HT] Configuracao ausente: ' +
-      missing.join(', ') +
-      '\n> Defina essas variaveis no painel Node.js da Hostinger (ou no .env local).' +
-      '\n> Veja DEPLOY.md secao 4.\n'
+// Flags de configuracao. O app SOBE mesmo sem os secretos (nao derruba o deploy);
+// apenas avisa e degrada as funcoes de banco ate serem configurados.
+export const hasServiceRole = !!env.supabaseServiceKey;
+export const hasDatabase = !!env.databaseUrl;
+
+if (!hasServiceRole || !hasDatabase) {
+  const faltando = [
+    !hasServiceRole && 'SUPABASE_SERVICE_ROLE_KEY',
+    !hasDatabase && 'DATABASE_URL',
+  ].filter(Boolean);
+  console.warn(
+    '\n[Central HT] Rodando em MODO DEGRADADO — faltam: ' +
+      faltando.join(', ') +
+      '\n> Front/login funcionam. Funcoes de banco (perfil, aulas, ranking) so' +
+      '\n  ativam apos definir essas variaveis no painel da Hostinger. Veja DEPLOY.md secao 4.\n'
   );
-  process.exit(1);
 }

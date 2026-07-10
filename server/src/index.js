@@ -4,7 +4,7 @@ import fastifyStatic from '@fastify/static';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { existsSync } from 'node:fs';
-import { env, isProd } from './env.js';
+import { env } from './env.js';
 import healthRoutes from './routes/health.js';
 import meRoutes from './routes/me.js';
 import announcementsRoutes from './routes/announcements.js';
@@ -22,9 +22,10 @@ await app.register(announcementsRoutes);
 await app.register(fichaRoutes);
 // (proximos epicos: aulas, ranking, admin, webhooks)
 
-// Serve o build do client em producao (SPA fallback)
+// Serve o build do client (SPA fallback) sempre que o build existir —
+// nao depende de NODE_ENV, para o deploy funcionar mesmo sem env configurado.
 const clientDist = resolve(__dirname, '../../client/dist');
-if (isProd && existsSync(clientDist)) {
+if (existsSync(clientDist)) {
   await app.register(fastifyStatic, { root: clientDist, wildcard: false });
   app.setNotFoundHandler((req, reply) => {
     if (req.raw.url?.startsWith('/api')) return reply.code(404).send({ error: 'nao_encontrado' });

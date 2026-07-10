@@ -1,19 +1,25 @@
 import pg from 'pg';
-import { env } from './env.js';
+import { env, hasDatabase } from './env.js';
 
 // Backend acessa o schema `ht` direto no Postgres (nao exposto no PostgREST).
 // search_path fixado em ht p/ todas as queries deste pool.
-const pool = new pg.Pool({
-  connectionString: env.databaseUrl,
-  max: 10,
-  ssl: env.databaseUrl?.includes('supabase.com') ? { rejectUnauthorized: false } : undefined,
-});
+// Sem DATABASE_URL o pool nao e criado: queries respondem erro claro (modo degradado).
+const pool = hasDatabase
+  ? new pg.Pool({
+      connectionString: env.databaseUrl,
+      max: 10,
+      ssl: env.databaseUrl?.includes('supabase.') ? { rejectUnauthorized: false } : undefined,
+    })
+  : null;
 
-pool.on('connect', (client) => {
-  client.query('set search_path to ht, public');
-});
+if (pool) {
+  pool.on('connect', (client) => {
+    client.query('set search_path to ht, public');
+  });
+}
 
 export async function query(text, params) {
+  if (!pool) throw new Error('banco_nao_configurado');
   const res = await pool.query(text, params);
   return res.rows;
 }
