@@ -5,7 +5,7 @@ player com marcação de conclusão, deveres de casa, avisos, ficha de interesse
 um **ranking com participantes simulados** para prova social e engajamento
 durante a semana de lançamento.
 
-Subdomínio de produção: `central.holdingtotal.com.br`
+Subdomínio de produção: `aluno.holdingtotal.com.br`
 
 ## Stack
 

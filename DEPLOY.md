@@ -6,8 +6,8 @@ reimplantação"** da Hostinger (build a partir do Git).
 
 ## 1. Subdomínio + DNS
 
-hPanel → **Domínios → Subdomínios**: crie `central` em `holdingtotal.com.br`
-→ `central.holdingtotal.com.br`.
+hPanel → **Domínios → Subdomínios**: crie `aluno` em `holdingtotal.com.br`
+→ `aluno.holdingtotal.com.br`.
 
 ## 2. Configuração de compilação (tela de deploy)
 
@@ -36,7 +36,7 @@ SUPABASE_URL=https://mbvybujpkwuorhtdzcde.supabase.co
 SUPABASE_ANON_KEY=sb_publishable_ZCwMkDCoJ5_H7DHZ476TsQ_CesBbG9J
 SUPABASE_SERVICE_ROLE_KEY=<secreto — Supabase → Settings → API>
 ADMIN_EMAILS=marcio@advmais.com
-CENTRAL_URL=https://central.holdingtotal.com.br
+CENTRAL_URL=https://aluno.holdingtotal.com.br
 NEXT_PUBLIC_SUPABASE_URL=https://mbvybujpkwuorhtdzcde.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_ZCwMkDCoJ5_H7DHZ476TsQ_CesBbG9J
 ```
@@ -68,7 +68,7 @@ Clique em **Salvar e reimplantar**. A cada `git push` na `main`, reimplante
 
 ## Checklist pós-deploy
 
-- [ ] `https://central.holdingtotal.com.br/api/health` → `{"status":"ok","db":"ok","modo":"completo"}`
+- [ ] `https://aluno.holdingtotal.com.br/api/health` → `{"status":"ok","db":"ok","modo":"completo"}`
 - [ ] `/login` carrega com a identidade HT (preto + laranja)
 - [ ] Login → primeiro acesso cai em `/trocar-senha`; depois abre a Central
 - [ ] Se `db` != `ok`, revisar `DATABASE_URL` (pooler) e `SUPABASE_SERVICE_ROLE_KEY`
