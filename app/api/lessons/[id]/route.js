@@ -26,15 +26,51 @@ async function carregarAula(id, cohortId) {
   return aula;
 }
 
+async function progresso(userId, lessonId) {
+  return unwrap(
+    await ht
+      .from('lesson_progress')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('lesson_id', lessonId)
+      .maybeSingle()
+  );
+}
+
+// Grava o tempo assistido ACUMULADO (nunca regride; teto = min_watch_seconds).
+async function gravarAssistido(userId, lessonId, prog, enviado, min) {
+  const capped = Math.min(min, Math.max(prog?.watched_seconds || 0, Math.floor(enviado) || 0));
+  if (!prog) {
+    return unwrap(
+      await ht
+        .from('lesson_progress')
+        .upsert(
+          { user_id: userId, lesson_id: lessonId, watched_seconds: capped, opened_at: new Date().toISOString() },
+          { onConflict: 'user_id,lesson_id' }
+        )
+        .select()
+        .single()
+    );
+  }
+  if (capped > (prog.watched_seconds || 0)) {
+    return unwrap(
+      await ht
+        .from('lesson_progress')
+        .update({ watched_seconds: capped })
+        .eq('user_id', userId)
+        .eq('lesson_id', lessonId)
+        .select()
+        .single()
+    );
+  }
+  return prog;
+}
+
 function montar(aula, prog) {
   const agora = Date.now();
-  const min = aula.min_watch_seconds || 600;
+  const min = aula.min_watch_seconds || 2700;
   const liberada = !aula.unlock_at || new Date(aula.unlock_at).getTime() <= agora;
-  let restante = min;
-  if (prog?.opened_at) {
-    const passou = Math.floor((agora - new Date(prog.opened_at).getTime()) / 1000);
-    restante = Math.max(0, min - passou);
-  }
+  const assistido = Math.min(min, prog?.watched_seconds || 0);
   return {
     id: aula.id,
     day_index: aula.day_index,
@@ -47,23 +83,12 @@ function montar(aula, prog) {
     min_watch_seconds: min,
     pontos: aula.pontos || 100,
     liberada,
-    opened_at: prog?.opened_at || null,
+    assistido_seconds: assistido,
+    restante_seconds: Math.max(0, min - assistido),
     concluida: !!prog?.completed_at,
     rating: prog?.rating || null,
     rating_comment: prog?.rating_comment || null,
-    restante_seconds: restante,
   };
-}
-
-async function progresso(userId, lessonId) {
-  return unwrap(
-    await ht
-      .from('lesson_progress')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('lesson_id', lessonId)
-      .maybeSingle()
-  );
 }
 
 export async function GET(request, { params }) {
@@ -95,16 +120,18 @@ export async function POST(request, { params }) {
     const liberada = !aula.unlock_at || new Date(aula.unlock_at).getTime() <= Date.now();
     if (!liberada) return Response.json({ error: 'aula_bloqueada' }, { status: 403 });
 
+    const min = aula.min_watch_seconds || 2700;
     let prog = await progresso(user.id, aula.id);
 
-    // Registra a abertura (inicia o cronometro server-side).
+    // Abre a aula: garante a linha de progresso (marca opened_at 1a vez) e
+    // devolve o tempo ja assistido pra o cliente retomar de onde parou.
     if (action === 'abrir') {
       if (!prog) {
         prog = unwrap(
           await ht
             .from('lesson_progress')
             .upsert(
-              { user_id: user.id, lesson_id: aula.id, opened_at: new Date().toISOString() },
+              { user_id: user.id, lesson_id: aula.id, opened_at: new Date().toISOString(), watched_seconds: 0 },
               { onConflict: 'user_id,lesson_id' }
             )
             .select()
@@ -124,15 +151,19 @@ export async function POST(request, { params }) {
       return Response.json(montar(aula, prog));
     }
 
-    // Conclui: valida que passou o tempo minimo desde a abertura e credita pontos 1x.
+    // Salva o progresso do cronometro (tempo assistido acumulado).
+    if (action === 'tick') {
+      prog = await gravarAssistido(user.id, aula.id, prog, body?.watched_seconds, min);
+      return Response.json(montar(aula, prog));
+    }
+
+    // Conclui: exige tempo assistido ACUMULADO >= minimo. Credita pontos 1x.
     if (action === 'concluir') {
-      const min = aula.min_watch_seconds || 600;
-      const openedAt = prog?.opened_at ? new Date(prog.opened_at).getTime() : null;
-      if (!openedAt) return Response.json({ error: 'aula_nao_iniciada' }, { status: 400 });
-      const passou = (Date.now() - openedAt) / 1000;
-      if (passou < min) {
+      prog = await gravarAssistido(user.id, aula.id, prog, body?.watched_seconds, min);
+      const assistido = prog?.watched_seconds || 0;
+      if (assistido < min) {
         return Response.json(
-          { error: 'tempo_insuficiente', faltam: Math.ceil(min - passou) },
+          { error: 'tempo_insuficiente', faltam: Math.ceil(min - assistido) },
           { status: 400 }
         );
       }
@@ -141,7 +172,7 @@ export async function POST(request, { params }) {
         prog = unwrap(
           await ht
             .from('lesson_progress')
-            .update({ completed_at: new Date().toISOString(), watched_seconds: min })
+            .update({ completed_at: new Date().toISOString() })
             .eq('user_id', user.id)
             .eq('lesson_id', aula.id)
             .select()

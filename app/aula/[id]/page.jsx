@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Guard from '@/components/Guard.jsx';
@@ -17,7 +17,7 @@ function AulaView() {
   const { id } = useParams();
   const [aula, setAula] = useState(null);
   const [erro, setErro] = useState(null);
-  const [restante, setRestante] = useState(null);
+  const [assistido, setAssistido] = useState(0);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
   const [rating, setRating] = useState(0);
@@ -25,16 +25,43 @@ function AulaView() {
   const [comentario, setComentario] = useState('');
   const [avaliado, setAvaliado] = useState(false);
 
-  // Abre a aula (registra o inicio do cronometro no servidor) e traz o estado.
+  const min = aula?.min_watch_seconds || 2700;
+
+  // Refs pra ler valores atuais dentro de intervalos/handlers sem stale closure.
+  const assistidoRef = useRef(0);
+  const ativoRef = useRef(true); // aluno esta de fato na aula (aba visivel + foco)
+  const concluidaRef = useRef(false);
+  const persistidoRef = useRef(0);
+
+  useEffect(() => {
+    assistidoRef.current = assistido;
+  }, [assistido]);
+
+  // Envia o tempo assistido acumulado pro servidor (keepalive p/ sobreviver ao sair).
+  const persistir = useCallback(() => {
+    const val = assistidoRef.current;
+    if (val <= 0 || val === persistidoRef.current) return;
+    persistidoRef.current = val;
+    api(`/api/lessons/${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'tick', watched_seconds: val }),
+      keepalive: true,
+    }).catch(() => {});
+  }, [id]);
+
+  // Abre a aula e retoma o tempo ja assistido.
   useEffect(() => {
     let vivo = true;
     api(`/api/lessons/${id}`, { method: 'POST', body: JSON.stringify({ action: 'abrir' }) })
       .then((a) => {
         if (!vivo) return;
         setAula(a);
-        setRestante(a.restante_seconds);
+        setAssistido(a.assistido_seconds || 0);
+        assistidoRef.current = a.assistido_seconds || 0;
+        persistidoRef.current = a.assistido_seconds || 0;
         setRating(a.rating || 0);
         setAvaliado(!!a.rating);
+        concluidaRef.current = !!a.concluida;
       })
       .catch((e) =>
         setErro(
@@ -48,12 +75,47 @@ function AulaView() {
     };
   }, [id]);
 
-  // Cronometro de contagem regressiva.
+  // "Ativo" = aba visivel E janela focada (conta o tempo só quando na aula).
   useEffect(() => {
-    if (restante === null || restante <= 0) return undefined;
-    const t = setTimeout(() => setRestante((r) => (r > 0 ? r - 1 : 0)), 1000);
-    return () => clearTimeout(t);
-  }, [restante]);
+    const calc = () => {
+      ativoRef.current = document.visibilityState === 'visible' && document.hasFocus();
+    };
+    const onVisibility = () => {
+      calc();
+      if (document.visibilityState === 'hidden') persistir(); // saiu da aba: salva
+    };
+    calc();
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', calc);
+    window.addEventListener('blur', calc);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', calc);
+      window.removeEventListener('blur', calc);
+    };
+  }, [persistir]);
+
+  // Cronometro: +1s por segundo, SÓ quando ativo, aula carregada e nao concluida.
+  useEffect(() => {
+    if (!aula) return undefined;
+    concluidaRef.current = !!aula.concluida;
+    if (aula.concluida) return undefined;
+    const t = setInterval(() => {
+      if (!ativoRef.current) return;
+      setAssistido((a) => (a < min ? a + 1 : a));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [aula, min]);
+
+  // Persiste a cada 15s enquanto conta; e ao desmontar (sair da pagina).
+  useEffect(() => {
+    if (!aula || aula.concluida) return undefined;
+    const t = setInterval(persistir, 15000);
+    return () => {
+      clearInterval(t);
+      persistir();
+    };
+  }, [aula, persistir]);
 
   async function concluir() {
     setBusy(true);
@@ -61,15 +123,16 @@ function AulaView() {
     try {
       const r = await api(`/api/lessons/${id}`, {
         method: 'POST',
-        body: JSON.stringify({ action: 'concluir' }),
+        body: JSON.stringify({ action: 'concluir', watched_seconds: assistidoRef.current }),
       });
+      concluidaRef.current = true;
       setAula((a) => ({ ...a, concluida: true }));
       setMsg(r.mensagem || 'Aula concluída!');
     } catch (e) {
-      const min = Math.round((aula?.min_watch_seconds || 1800) / 60);
+      const m = Math.round(min / 60);
       setErro(
         e.message === 'tempo_insuficiente'
-          ? `Assista pelo menos ${min} minutos antes de concluir.`
+          ? `Você ainda não assistiu os ${m} minutos necessários. O tempo conta só enquanto você está nesta aula.`
           : 'Não foi possível concluir agora. Tente de novo.'
       );
     } finally {
@@ -94,9 +157,10 @@ function AulaView() {
     }
   }
 
-  const podeConcluir = restante !== null && restante <= 0;
-  const min = aula?.min_watch_seconds || 600;
-  const progresso = restante === null ? 0 : Math.min(100, Math.round(((min - restante) / min) * 100));
+  const restante = Math.max(0, min - assistido);
+  const podeConcluir = assistido >= min;
+  const progresso = min ? Math.min(100, Math.round((assistido / min) * 100)) : 0;
+  const minutos = Math.round(min / 60);
 
   return (
     <div className="ht-hero-glow" style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -117,8 +181,8 @@ function AulaView() {
         {erro && !aula && (
           <div className="ht-card" style={{ padding: 28, textAlign: 'center' }}>
             <p className="ht-error" style={{ marginBottom: 16 }}>{erro}</p>
-            <Link href="/" className="ht-btn ht-btn-primary" style={{ textDecoration: 'none' }}>
-              Voltar para a Central
+            <Link href="/aulas" className="ht-btn ht-btn-primary" style={{ textDecoration: 'none' }}>
+              Voltar para as aulas
             </Link>
           </div>
         )}
@@ -126,7 +190,10 @@ function AulaView() {
         {aula && (
           <>
             <div>
-              <span className="ht-tag">Dia {aula.day_index}</span>
+              <Link href="/aulas" style={{ color: 'var(--ht-text-dim)', fontSize: 13, textDecoration: 'none' }}>
+                ← Todas as aulas
+              </Link>
+              <span className="ht-tag" style={{ marginLeft: 12 }}>Dia {aula.day_index}</span>
               <h1 style={{ fontSize: 'clamp(24px, 5vw, 34px)', textTransform: 'uppercase', marginTop: 12 }}>
                 {aula.titulo}
               </h1>
@@ -149,23 +216,30 @@ function AulaView() {
               </p>
             )}
 
-            {/* Bloco de conclusão / timer */}
             {!aula.concluida ? (
               <div className="ht-card" style={{ padding: '22px 24px' }}>
                 {!podeConcluir ? (
                   <>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 12 }}>
-                      <strong style={{ fontSize: 15 }}>Assistindo…</strong>
-                      <span style={{ marginLeft: 'auto', fontFamily: 'var(--ht-font-display)', fontWeight: 800, color: 'var(--ht-orange)', fontSize: 22 }}>
-                        {fmtTempo(restante ?? min)}
+                      <strong style={{ fontSize: 15 }}>Tempo assistido</strong>
+                      <span
+                        style={{
+                          marginLeft: 'auto',
+                          fontFamily: 'var(--ht-font-display)',
+                          fontWeight: 800,
+                          color: 'var(--ht-orange)',
+                          fontSize: 22,
+                        }}
+                      >
+                        {fmtTempo(assistido)} <span style={{ color: 'var(--ht-text-muted)', fontSize: 14 }}>/ {fmtTempo(min)}</span>
                       </span>
                     </div>
                     <div className="ht-progress">
                       <div className="ht-progress-fill" style={{ width: `${progresso}%` }} />
                     </div>
                     <p style={{ color: 'var(--ht-text-muted)', fontSize: 13, margin: '12px 0 0' }}>
-                      O botão de conclusão libera após {Math.round((aula.min_watch_seconds || 1800) / 60)}{' '}
-                      minutos assistindo. Fica de olho — quem conclui pontua.
+                      O botão de conclusão libera após {minutos} minutos assistindo. O tempo conta
+                      apenas enquanto você está nesta aula — e fica salvo se você sair e voltar.
                     </p>
                   </>
                 ) : (
@@ -194,7 +268,6 @@ function AulaView() {
                 <strong style={{ fontSize: 16, color: 'var(--ht-success)' }}>✓ Aula concluída</strong>
                 {msg && <p style={{ color: 'var(--ht-text-dim)', fontSize: 14, margin: '6px 0 0' }}>{msg}</p>}
 
-                {/* Avaliação */}
                 <div style={{ marginTop: 20, borderTop: '1px solid var(--ht-border)', paddingTop: 18 }}>
                   <strong style={{ fontSize: 14, display: 'block', marginBottom: 10 }}>
                     {avaliado ? 'Sua avaliação' : 'O que achou desta aula?'}
