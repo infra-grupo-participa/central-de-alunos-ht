@@ -9,24 +9,28 @@ Subdomínio de produção: `central.holdingtotal.com.br`
 
 ## Stack
 
-- **Backend:** Node + Fastify (`server/`) — API, webhook Hotmart, motor de ranking
-- **Frontend:** React + Vite (`client/`) — identidade visual HT (preto + laranja)
+- **Framework:** Next.js (App Router) — páginas + API (`/api/*`) no mesmo app
+  - `app/` — páginas (`/`, `/login`, `/trocar-senha`, `/bem-vindo`) e rotas de API
+  - `lib/` — servidor: pg → schema `ht`, Supabase `service_role`, auth, env
+  - `components/` — providers (auth/estado do aluno) e UI, identidade HT (preto + laranja)
 - **Banco/Auth:** Supabase (projeto hub `mbvybujpkwuorhtdzcde`, schema isolado `ht`)
 - **Player:** YouTube embutido + timer de conclusão (trocável por Panda)
-- **Email:** Resend · **Checkout:** Hotmart · **Host:** Hostinger (Node app)
+- **Email:** Resend · **Checkout:** Hotmart · **Host:** Hostinger (deploy Next.js via Git)
 
 ## Setup local
 
 ```bash
-npm install                    # instala server + client (workspaces)
-cp .env.example .env           # preencher SERVICE_ROLE_KEY e DATABASE_URL
-cp client/.env.example client/.env
-npm run dev                    # API :8787 + Web :5173
+npm install                    # instala o Next.js
+cp .env.example .env.local     # preencher SERVICE_ROLE_KEY e DATABASE_URL
+npm run dev                    # app em http://localhost:3000
 ```
 
-Faltando no `.env` (pegar no painel Supabase → Settings):
-- `SUPABASE_SERVICE_ROLE_KEY` (API)
-- `DATABASE_URL` (Database → Connection string / pooler)
+Faltando no `.env.local` (pegar no painel Supabase → Settings):
+- `SUPABASE_SERVICE_ROLE_KEY` (Settings → API)
+- `DATABASE_URL` (Settings → Database → Connection string / pooler)
+
+Sem esses dois o app roda em **modo degradado**: front + login funcionam, mas
+as funções de banco só ativam após configurá-los. Deploy: ver `DEPLOY.md`.
 
 ## Banco de dados
 

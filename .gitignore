@@ -1,7 +1,8 @@
 node_modules/
+.next/
+out/
 .env
-.env.local
+.env*.local
 *.log
 .DS_Store
-# client/dist é versionado de proposito: o build é feito localmente e commitado,
-# para o deploy na Hostinger NAO precisar rodar o vite no servidor.
+next-env.d.ts

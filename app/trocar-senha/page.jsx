@@ -1,0 +1,131 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Guard from '@/components/Guard.jsx';
+import { useMe } from '@/components/MeProvider.jsx';
+import { api } from '@/lib/supabase-browser.js';
+import Logo from '@/components/Logo.jsx';
+
+// Primeiro acesso: força a troca da senha genérica antes de liberar a home.
+function TrocarSenhaView() {
+  const { refresh } = useMe();
+  const router = useRouter();
+  const [senha, setSenha] = useState('');
+  const [confirma, setConfirma] = useState('');
+  const [erro, setErro] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  async function onSubmit(e) {
+    e.preventDefault();
+    setErro(null);
+    if (senha.length < 8) {
+      setErro('A nova senha precisa ter pelo menos 8 caracteres.');
+      return;
+    }
+    if (senha !== confirma) {
+      setErro('As senhas não conferem. Digite a mesma senha nos dois campos.');
+      return;
+    }
+    setBusy(true);
+    try {
+      await api('/api/me/senha', {
+        method: 'POST',
+        body: JSON.stringify({ nova_senha: senha }),
+      });
+      await refresh();
+      router.replace('/');
+    } catch (err) {
+      setErro(
+        err.message === 'senha_invalida'
+          ? 'A nova senha precisa ter pelo menos 8 caracteres.'
+          : 'Não foi possível trocar a senha agora. Tente de novo.'
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div
+      className="ht-hero-glow"
+      style={{
+        minHeight: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '32px 20px',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
+        <Logo size={42} />
+        <strong style={{ letterSpacing: '0.12em', fontSize: 15 }}>HOLDING TOTAL</strong>
+      </div>
+
+      <div className="ht-card" style={{ width: '100%', maxWidth: 420, padding: '34px 30px' }}>
+        <span className="ht-tag">Primeiro acesso</span>
+        <h1
+          style={{
+            fontSize: 'clamp(28px, 5.5vw, 36px)',
+            textTransform: 'uppercase',
+            marginTop: 18,
+          }}
+        >
+          Crie sua <span className="ht-accent">nova senha</span>.
+        </h1>
+        <p style={{ color: 'var(--ht-text-dim)', fontSize: 15, lineHeight: 1.5, marginTop: 12 }}>
+          Por segurança, troque a senha genérica antes de entrar. Leva 10 segundos —
+          e a Central abre para você.
+        </p>
+
+        <form onSubmit={onSubmit} style={{ marginTop: 10 }}>
+          <label className="ht-label" htmlFor="nova-senha">
+            Nova senha
+          </label>
+          <input
+            id="nova-senha"
+            className="ht-input"
+            type="password"
+            autoComplete="new-password"
+            placeholder="Mínimo de 8 caracteres"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+          />
+
+          <label className="ht-label" htmlFor="confirma-senha">
+            Confirme a nova senha
+          </label>
+          <input
+            id="confirma-senha"
+            className="ht-input"
+            type="password"
+            autoComplete="new-password"
+            placeholder="Repita a senha"
+            value={confirma}
+            onChange={(e) => setConfirma(e.target.value)}
+          />
+
+          {erro && <p className="ht-error">{erro}</p>}
+
+          <button
+            type="submit"
+            className="ht-btn ht-btn-primary"
+            disabled={busy}
+            style={{ width: '100%', marginTop: 22, opacity: busy ? 0.7 : 1 }}
+          >
+            {busy ? 'Salvando...' : 'Salvar e entrar'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default function TrocarSenhaPage() {
+  return (
+    <Guard>
+      <TrocarSenhaView />
+    </Guard>
+  );
+}
