@@ -1,17 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { api } from '@/lib/supabase-browser.js';
 
-// Ranking ao vivo: atualiza sozinho a cada 20s (a pontuacao das personas varia
-// com o tempo no backend), destacando a posicao do aluno.
-export default function Ranking() {
+// Ranking ao vivo: atualiza sozinho a cada 20s. `compact` = versao pequena da
+// home (top 5 + link pro ranking completo); sem ela = pagina /ranking completa.
+export default function Ranking({ compact = false }) {
   const [data, setData] = useState(null);
 
   useEffect(() => {
     let vivo = true;
+    const url = compact ? '/api/ranking' : '/api/ranking?full=1';
     const load = () =>
-      api('/api/ranking')
+      api(url)
         .then((d) => {
           if (vivo) setData(d);
         })
@@ -22,36 +24,47 @@ export default function Ranking() {
       vivo = false;
       clearInterval(t);
     };
-  }, []);
+  }, [compact]);
 
   if (!data || !data.top || data.top.length === 0) return null;
 
   const { top, eu, total_participantes } = data;
-  const euNoTop = top.some((x) => x.eu);
+  const linhas = compact ? top.slice(0, 5) : top;
+  const euNasLinhas = linhas.some((x) => x.eu);
 
   return (
-    <section className="ht-card" style={{ padding: '22px 24px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+    <section className="ht-card" style={{ padding: compact ? '18px 20px' : '24px 26px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
         <span className="ht-live-dot" />
-        <h2 style={{ fontSize: 19, textTransform: 'uppercase' }}>Ranking ao vivo</h2>
+        <h2 style={{ fontSize: compact ? 16 : 20, textTransform: 'uppercase' }}>Ranking ao vivo</h2>
         <span style={{ marginLeft: 'auto', color: 'var(--ht-text-muted)', fontSize: 12 }}>
-          {total_participantes} participantes
+          {total_participantes} alunos
         </span>
       </div>
 
       <ol className="ht-rank">
-        {top.map((x) => (
+        {linhas.map((x) => (
           <RankRow key={`${x.posicao}-${x.nome}`} x={x} />
         ))}
       </ol>
 
-      {!euNoTop && eu && (
+      {!euNasLinhas && eu && (
         <>
           <div className="ht-rank-sep">• • •</div>
           <ol className="ht-rank">
             <RankRow x={eu} />
           </ol>
         </>
+      )}
+
+      {compact && (
+        <Link
+          href="/ranking"
+          className="ht-btn ht-btn-ghost"
+          style={{ width: '100%', marginTop: 14, textDecoration: 'none', fontSize: 14 }}
+        >
+          Ver ranking completo →
+        </Link>
       )}
     </section>
   );

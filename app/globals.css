@@ -264,19 +264,48 @@ h3 {
   background: var(--ht-surface);
   color: var(--ht-text);
   cursor: pointer;
+  text-decoration: none;
   font-family: var(--ht-font-body);
   transition: border-color 0.15s ease, transform 0.08s ease;
 }
-.ht-lesson:hover:not(:disabled) {
+.ht-lesson:not(.ht-lesson-lock):hover {
   border-color: var(--ht-orange);
-}
-.ht-lesson-ativa {
-  border-color: var(--ht-orange);
-  box-shadow: 0 0 0 2px var(--ht-orange-glow);
 }
 .ht-lesson-lock {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+/* Barra de progresso do timer da aula */
+.ht-progress {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ht-bg-2);
+  overflow: hidden;
+}
+.ht-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ht-orange-deep), var(--ht-orange-bright));
+  transition: width 1s linear;
+}
+
+/* Estrelas de avaliacao */
+.ht-stars {
+  display: flex;
+  gap: 4px;
+}
+.ht-star {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--ht-orange);
+}
+.ht-star:disabled {
+  cursor: default;
 }
 .ht-lesson-num {
   flex-shrink: 0;

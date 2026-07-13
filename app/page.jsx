@@ -150,14 +150,14 @@ function HomeView() {
         )}
         {!fichaPendente && fichaMsg && <p className="ht-success-msg">{fichaMsg}</p>}
 
+        {/* Ranking ao vivo (compacto, visível assim que abre) */}
+        <Ranking compact />
+
         {/* Contagem regressiva */}
         <Countdown cohort={cohort} />
 
-        {/* Aulas (playlist + player) */}
+        {/* Aulas (playlist) — cada aula abre em página própria */}
         <Aulas />
-
-        {/* Ranking ao vivo */}
-        <Ranking />
       </main>
 
       <footer style={{ padding: '16px 24px', color: 'var(--ht-text-muted)', fontSize: 13 }}>
