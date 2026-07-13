@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/components/AuthProvider.jsx';
 import { api } from '@/lib/supabase-browser.js';
 
@@ -13,26 +13,34 @@ export function useMe() {
 
 export function MeProvider({ children }) {
   const { session } = useAuth();
+  // Chave estavel: o id do usuario NAO muda quando o token e renovado (ex.: ao
+  // voltar pra aba). Antes dependiamos do objeto `session` inteiro, entao todo
+  // refresh de token re-disparava /api/me e reexibia "Carregando sua Central".
+  const userId = session?.user?.id ?? null;
   const [me, setMe] = useState(null);
   const [loading, setLoading] = useState(false);
+  const loadedFor = useRef(null);
 
   const refresh = useCallback(async () => {
-    if (!session) {
+    if (!userId) {
       setMe(null);
+      loadedFor.current = null;
       return null;
     }
     setLoading(true);
     try {
       const data = await api('/api/me');
       setMe(data);
+      loadedFor.current = userId;
       return data;
     } catch {
-      setMe(null);
+      // Erro transitorio (ex.: token sendo renovado): mantem o `me` atual em vez
+      // de zerar e cair no Splash.
       return null;
     } finally {
       setLoading(false);
     }
-  }, [session]);
+  }, [userId]);
 
   useEffect(() => {
     refresh();
