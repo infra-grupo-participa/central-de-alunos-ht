@@ -66,9 +66,10 @@ function AulaView() {
       setAula((a) => ({ ...a, concluida: true }));
       setMsg(r.mensagem || 'Aula concluída!');
     } catch (e) {
+      const min = Math.round((aula?.min_watch_seconds || 1800) / 60);
       setErro(
         e.message === 'tempo_insuficiente'
-          ? 'Assista pelo menos 10 minutos antes de concluir.'
+          ? `Assista pelo menos ${min} minutos antes de concluir.`
           : 'Não foi possível concluir agora. Tente de novo.'
       );
     } finally {
@@ -163,7 +164,8 @@ function AulaView() {
                       <div className="ht-progress-fill" style={{ width: `${progresso}%` }} />
                     </div>
                     <p style={{ color: 'var(--ht-text-muted)', fontSize: 13, margin: '12px 0 0' }}>
-                      O botão de conclusão libera após 10 minutos assistindo. Fica de olho — quem conclui pontua.
+                      O botão de conclusão libera após {Math.round((aula.min_watch_seconds || 1800) / 60)}{' '}
+                      minutos assistindo. Fica de olho — quem conclui pontua.
                     </p>
                   </>
                 ) : (
