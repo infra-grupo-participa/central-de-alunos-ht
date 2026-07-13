@@ -26,8 +26,8 @@ function HomeView() {
   const profile = me?.profile;
   const cohort = me?.cohort;
   const fichaPendente = me?.ficha?.status === 'pendente';
-  const avisoFicha = avisos.find((a) => a.tipo === 'ficha');
-  const fichaUrl = avisoFicha?.cta_url || null;
+  const fichaUrl = me?.ficha_url || null;
+  const fichaIniciada = !!me?.ficha?.iniciada_at;
   const primeiroNome = (profile?.nome || profile?.email || 'Aluno').split(' ')[0].split('@')[0];
 
   const total = aulas?.length || 0;
@@ -50,6 +50,14 @@ function HomeView() {
     } finally {
       setFichaBusy(false);
     }
+  }
+
+  // Registra que o aluno foi preencher a ficha (a navegacao fica no href, entao
+  // nao ha bloqueio de pop-up). Atualiza o estado depois pra refletir iniciada_at.
+  function registrarAberturaFicha() {
+    api('/api/ficha/iniciar', { method: 'POST', body: JSON.stringify({}) })
+      .then(() => refresh())
+      .catch(() => {});
   }
 
   const saudacao =
@@ -149,6 +157,11 @@ function HomeView() {
                 Leva 2 minutos e vale <strong style={{ color: 'var(--ht-orange)' }}>+50 pontos</strong> no
                 ranking. Não deixe para depois.
               </p>
+              {fichaIniciada && (
+                <p style={{ margin: '8px 0 0', color: 'var(--ht-orange)', fontSize: 13, fontWeight: 600 }}>
+                  Você já abriu o formulário — depois de enviar, confirme aqui para creditar seus pontos.
+                </p>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               {fichaUrl && (
@@ -158,8 +171,9 @@ function HomeView() {
                   href={fichaUrl}
                   target="_blank"
                   rel="noreferrer"
+                  onClick={registrarAberturaFicha}
                 >
-                  Preencher agora
+                  {fichaIniciada ? 'Abrir formulário' : 'Preencher agora'}
                 </a>
               )}
               <button

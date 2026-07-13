@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/auth.js';
 import { ht, unwrap } from '@/lib/htdb.js';
+import { fichaFormUrl } from '@/lib/env.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -71,7 +72,7 @@ export async function GET(request) {
       );
     }
 
-    return Response.json({ profile, cohort, settings, ficha });
+    return Response.json({ profile, cohort, settings, ficha, ficha_url: fichaFormUrl(user) });
   } catch (e) {
     console.error('[api/me]', e);
     return Response.json({ error: 'erro_interno' }, { status: 500 });
