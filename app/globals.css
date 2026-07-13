@@ -122,6 +122,80 @@ h3 {
   text-transform: uppercase;
 }
 
+/* -------------------------------------------------------------- Navbar */
+.ht-nav {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--ht-border);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(10, 10, 11, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.ht-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ht-text);
+}
+.ht-nav-brand strong {
+  letter-spacing: 0.12em;
+  font-size: 14px;
+}
+.ht-nav-tabs {
+  justify-self: center;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--ht-surface);
+  border: 1px solid var(--ht-border);
+  border-radius: 999px;
+}
+.ht-nav-tab {
+  padding: 8px 20px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--ht-text-dim);
+  font-weight: 700;
+  font-size: 14px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.ht-nav-tab:hover {
+  color: var(--ht-text);
+}
+.ht-nav-tab-on {
+  background: linear-gradient(180deg, var(--ht-orange-bright), var(--ht-orange-deep));
+  color: #fff;
+}
+.ht-nav-tab-on:hover {
+  color: #fff;
+}
+.ht-nav-sair {
+  justify-self: end;
+  padding: 8px 16px;
+  font-size: 13px;
+}
+@media (max-width: 600px) {
+  .ht-nav {
+    grid-template-columns: auto 1fr auto;
+    padding: 10px 14px;
+    gap: 8px;
+  }
+  .ht-nav-brand strong {
+    display: none;
+  }
+  .ht-nav-tab {
+    padding: 7px 13px;
+    font-size: 13px;
+  }
+}
+
 /* ============================================================
    Utilitários do Épico 1 (login, avisos, countdown).
    ============================================================ */
@@ -288,6 +362,38 @@ h3 {
   height: 100%;
   background: linear-gradient(90deg, var(--ht-orange-deep), var(--ht-orange-bright));
   transition: width 1s linear;
+}
+
+/* Stat tiles do painel do aluno */
+.ht-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+.ht-stat {
+  background: var(--ht-bg-2);
+  border: 1px solid var(--ht-border);
+  border-radius: var(--ht-radius);
+  padding: 16px 12px;
+  text-align: center;
+}
+.ht-stat-n {
+  display: block;
+  font-family: var(--ht-font-display);
+  font-weight: 900;
+  font-size: clamp(22px, 5vw, 28px);
+  line-height: 1;
+  color: var(--ht-orange);
+  font-variant-numeric: tabular-nums;
+}
+.ht-stat-l {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ht-text-muted);
 }
 
 /* Estrelas de avaliacao */

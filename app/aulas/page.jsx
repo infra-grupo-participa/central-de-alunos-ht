@@ -2,18 +2,17 @@
 
 import Guard from '@/components/Guard.jsx';
 import Navbar from '@/components/Navbar.jsx';
-import Ranking from '@/components/Ranking.jsx';
+import Aulas from '@/components/Aulas.jsx';
 
-function RankingView() {
+function AulasView() {
   return (
     <div className="ht-hero-glow" style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
-
       <main
         style={{
           flex: 1,
           width: '100%',
-          maxWidth: 720,
+          maxWidth: 820,
           margin: '0 auto',
           padding: '26px 24px 60px',
           display: 'flex',
@@ -22,26 +21,26 @@ function RankingView() {
         }}
       >
         <div>
-          <span className="ht-tag">Classificação da turma</span>
+          <span className="ht-tag">Sua jornada</span>
           <h1 style={{ fontSize: 'clamp(26px, 5vw, 38px)', textTransform: 'uppercase', marginTop: 12 }}>
-            Ranking <span className="ht-accent">ao vivo</span>.
+            Aulas<span className="ht-accent">.</span>
           </h1>
           <p style={{ color: 'var(--ht-text-dim)', fontSize: 15, marginTop: 10 }}>
-            Cada aula concluída e cada ação valem pontos. O topo é de quem se move primeiro —
-            atualiza sozinho a cada 20 segundos.
+            Uma aula por dia, no ritmo certo. Assista até o fim, marque como concluída e garanta
+            seus pontos — quem avança primeiro lidera o ranking.
           </p>
         </div>
 
-        <Ranking />
+        <Aulas />
       </main>
     </div>
   );
 }
 
-export default function RankingPage() {
+export default function AulasPage() {
   return (
     <Guard>
-      <RankingView />
+      <AulasView />
     </Guard>
   );
 }

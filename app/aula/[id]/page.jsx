@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Guard from '@/components/Guard.jsx';
-import Logo from '@/components/Logo.jsx';
+import Navbar from '@/components/Navbar.jsx';
 import { api } from '@/lib/supabase-browser.js';
 
 function fmtTempo(s) {
@@ -99,25 +99,7 @@ function AulaView() {
 
   return (
     <div className="ht-hero-glow" style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
-      <header
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          padding: '18px 24px',
-          borderBottom: '1px solid var(--ht-border)',
-        }}
-      >
-        <Logo />
-        <strong style={{ letterSpacing: '0.12em', fontSize: 14 }}>HOLDING TOTAL</strong>
-        <Link
-          href="/"
-          className="ht-btn ht-btn-ghost"
-          style={{ marginLeft: 'auto', padding: '9px 16px', fontSize: 13, textDecoration: 'none' }}
-        >
-          ← Voltar
-        </Link>
-      </header>
+      <Navbar />
 
       <main
         style={{

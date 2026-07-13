@@ -13,6 +13,8 @@ const nextConfig = {
       { source: '/login', headers: noCache },
       { source: '/trocar-senha', headers: noCache },
       { source: '/bem-vindo', headers: noCache },
+      { source: '/aulas', headers: noCache },
+      { source: '/ranking', headers: noCache },
     ];
   },
 };
