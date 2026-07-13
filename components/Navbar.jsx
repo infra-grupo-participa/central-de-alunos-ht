@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Logo from '@/components/Logo.jsx';
 import { useAuth } from '@/components/AuthProvider.jsx';
+import { IcoHome, IcoAulas, IcoRanking, IcoSair } from '@/components/icons.jsx';
 
 const TABS = [
-  { href: '/', label: 'Home' },
-  { href: '/aulas', label: 'Aulas' },
-  { href: '/ranking', label: 'Ranking' },
+  { href: '/', label: 'Home', Ico: IcoHome },
+  { href: '/aulas', label: 'Aulas', Ico: IcoAulas },
+  { href: '/ranking', label: 'Ranking', Ico: IcoRanking },
 ];
 
 function ativo(href, pathname) {
@@ -35,19 +36,22 @@ export default function Navbar() {
       </Link>
 
       <nav className="ht-nav-tabs">
-        {TABS.map((t) => (
+        {TABS.map(({ href, label, Ico }) => (
           <Link
-            key={t.href}
-            href={t.href}
-            className={`ht-nav-tab ${ativo(t.href, pathname) ? 'ht-nav-tab-on' : ''}`}
+            key={href}
+            href={href}
+            aria-label={label}
+            className={`ht-nav-tab ${ativo(href, pathname) ? 'ht-nav-tab-on' : ''}`}
           >
-            {t.label}
+            <Ico size={17} />
+            <span className="ht-nav-tab-label">{label}</span>
           </Link>
         ))}
       </nav>
 
-      <button className="ht-btn ht-btn-ghost ht-nav-sair" onClick={sair}>
-        Sair
+      <button className="ht-btn ht-btn-ghost ht-nav-sair" onClick={sair} aria-label="Sair">
+        <IcoSair size={16} />
+        <span className="ht-nav-sair-label">Sair</span>
       </button>
     </header>
   );

@@ -8,6 +8,17 @@ import { useMe } from '@/components/MeProvider.jsx';
 import { api } from '@/lib/supabase-browser.js';
 import Ranking from '@/components/Ranking.jsx';
 import { splitCountdown, pad2, formatDateLong } from '@/lib/format.js';
+import {
+  IcoConcluida,
+  IcoPontos,
+  IcoTrofeu,
+  IcoAvancar,
+  IcoContagem,
+  IcoLive,
+  IcoUrgente,
+  IcoFicha,
+  IcoAviso,
+} from '@/components/icons.jsx';
 
 function HomeView() {
   const { me, refresh } = useMe();
@@ -110,9 +121,9 @@ function HomeView() {
           </div>
 
           <div className="ht-stats">
-            <Stat n={concluidas} l="Aulas concluídas" />
-            <Stat n={rank?.eu?.pontos ?? '—'} l="Pontos" />
-            <Stat n={rank?.eu?.posicao ? `${rank.eu.posicao}º` : '—'} l="No ranking" />
+            <Stat Ico={IcoConcluida} n={concluidas} l="Aulas concluídas" />
+            <Stat Ico={IcoPontos} n={rank?.eu?.pontos ?? '—'} l="Pontos" />
+            <Stat Ico={IcoTrofeu} n={rank?.eu?.posicao ? `${rank.eu.posicao}º` : '—'} l="No ranking" />
           </div>
 
           {proxima ? (
@@ -121,11 +132,13 @@ function HomeView() {
               className="ht-btn ht-btn-primary"
               style={{ marginTop: 18, textDecoration: 'none' }}
             >
-              {concluidas === 0 ? 'Começar a Aula 1' : `Continuar — Aula ${proxima.day_index}`} →
+              {concluidas === 0 ? 'Começar a Aula 1' : `Continuar — Aula ${proxima.day_index}`}
+              <IcoAvancar size={17} />
             </Link>
           ) : total > 0 ? (
             <p className="ht-success-msg" style={{ marginTop: 14 }}>
-              ✓ Você está em dia com as aulas liberadas.
+              <IcoConcluida size={16} />
+              Você está em dia com as aulas liberadas.
             </p>
           ) : null}
         </section>
@@ -142,6 +155,9 @@ function HomeView() {
         {/* Ficha de interesse */}
         {fichaPendente && (
           <div className="ht-banner ht-banner-ficha">
+            <span className="ht-banner-ico">
+              <IcoFicha size={20} />
+            </span>
             <div style={{ flex: 1, minWidth: 240 }}>
               <strong
                 style={{
@@ -199,9 +215,10 @@ function HomeView() {
   );
 }
 
-function Stat({ n, l }) {
+function Stat({ Ico, n, l }) {
   return (
     <div className="ht-stat">
+      <Ico size={16} className="ht-stat-ico" />
       <span className="ht-stat-n">{n}</span>
       <span className="ht-stat-l">{l}</span>
     </div>
@@ -209,6 +226,12 @@ function Stat({ n, l }) {
 }
 
 // ---------------------------------------------------------------- Avisos
+
+const AVISO_ICO = {
+  live: IcoLive,
+  urgente: IcoUrgente,
+  ficha: IcoFicha,
+};
 
 function AvisoBanner({ aviso }) {
   const classe =
@@ -221,9 +244,13 @@ function AvisoBanner({ aviso }) {
           : 'ht-banner-normal';
 
   const aoVivo = aviso.tipo === 'live';
+  const Ico = AVISO_ICO[aviso.tipo] || IcoAviso;
 
   return (
     <div className={`ht-banner ${classe}`}>
+      <span className="ht-banner-ico">
+        <Ico size={20} />
+      </span>
       <div style={{ flex: 1, minWidth: 240 }}>
         <strong
           style={{
@@ -301,7 +328,10 @@ function Countdown({ cohort }) {
 
   return (
     <section className="ht-card" style={{ padding: '28px 26px' }}>
-      <span className="ht-tag">{alvo.titulo}</span>
+      <span className="ht-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
+        <IcoContagem size={14} />
+        {alvo.titulo}
+      </span>
       <h2 style={{ fontSize: 'clamp(22px, 4.5vw, 32px)', textTransform: 'uppercase', margin: '16px 0 20px' }}>
         Faltam{' '}
         <span className="ht-accent">{dias > 0 ? `${dias} ${dias === 1 ? 'dia' : 'dias'}` : 'horas'}</span>{' '}

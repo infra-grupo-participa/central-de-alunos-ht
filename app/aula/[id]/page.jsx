@@ -6,6 +6,14 @@ import Link from 'next/link';
 import Guard from '@/components/Guard.jsx';
 import Navbar from '@/components/Navbar.jsx';
 import { api } from '@/lib/supabase-browser.js';
+import {
+  IcoVoltar,
+  IcoRelogio,
+  IcoCheck,
+  IcoConcluida,
+  IcoEstrela,
+  IcoErro,
+} from '@/components/icons.jsx';
 
 function fmtTempo(s) {
   const m = Math.floor(s / 60);
@@ -180,7 +188,10 @@ function AulaView() {
       >
         {erro && !aula && (
           <div className="ht-card" style={{ padding: 28, textAlign: 'center' }}>
-            <p className="ht-error" style={{ marginBottom: 16 }}>{erro}</p>
+            <p className="ht-error" style={{ marginBottom: 16, justifyContent: 'center' }}>
+              <IcoErro size={16} />
+              {erro}
+            </p>
             <Link href="/aulas" className="ht-btn ht-btn-primary" style={{ textDecoration: 'none' }}>
               Voltar para as aulas
             </Link>
@@ -190,8 +201,19 @@ function AulaView() {
         {aula && (
           <>
             <div>
-              <Link href="/aulas" style={{ color: 'var(--ht-text-dim)', fontSize: 13, textDecoration: 'none' }}>
-                ← Todas as aulas
+              <Link
+                href="/aulas"
+                style={{
+                  color: 'var(--ht-text-dim)',
+                  fontSize: 13,
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <IcoVoltar size={15} />
+                Todas as aulas
               </Link>
               <span className="ht-tag" style={{ marginLeft: 12 }}>Dia {aula.day_index}</span>
               <h1 style={{ fontSize: 'clamp(24px, 5vw, 34px)', textTransform: 'uppercase', marginTop: 12 }}>
@@ -220,7 +242,8 @@ function AulaView() {
               <div className="ht-card" style={{ padding: '22px 24px' }}>
                 {!podeConcluir ? (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <IcoRelogio size={16} style={{ color: 'var(--ht-text-muted)' }} />
                       <strong style={{ fontSize: 15 }}>Tempo assistido</strong>
                       <span
                         style={{
@@ -257,15 +280,38 @@ function AulaView() {
                       disabled={busy}
                       style={{ opacity: busy ? 0.7 : 1 }}
                     >
-                      {busy ? 'Confirmando…' : 'Marcar como assistida'}
+                      {busy ? (
+                        'Confirmando…'
+                      ) : (
+                        <>
+                          <IcoCheck size={17} strokeWidth={2.5} />
+                          Marcar como assistida
+                        </>
+                      )}
                     </button>
                   </>
                 )}
-                {erro && <p className="ht-error">{erro}</p>}
+                {erro && (
+                  <p className="ht-error">
+                    <IcoErro size={16} />
+                    {erro}
+                  </p>
+                )}
               </div>
             ) : (
               <div className="ht-card" style={{ padding: '22px 24px' }}>
-                <strong style={{ fontSize: 16, color: 'var(--ht-success)' }}>✓ Aula concluída</strong>
+                <strong
+                  style={{
+                    fontSize: 16,
+                    color: 'var(--ht-success)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <IcoConcluida size={18} />
+                  Aula concluída
+                </strong>
                 {msg && <p style={{ color: 'var(--ht-text-dim)', fontSize: 14, margin: '6px 0 0' }}>{msg}</p>}
 
                 <div style={{ marginTop: 20, borderTop: '1px solid var(--ht-border)', paddingTop: 18 }}>
@@ -273,19 +319,26 @@ function AulaView() {
                     {avaliado ? 'Sua avaliação' : 'O que achou desta aula?'}
                   </strong>
                   <div className="ht-stars" onMouseLeave={() => setHover(0)}>
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        className="ht-star"
-                        disabled={avaliado}
-                        onMouseEnter={() => !avaliado && setHover(n)}
-                        onClick={() => !avaliado && setRating(n)}
-                        aria-label={`${n} estrelas`}
-                      >
-                        <span style={{ opacity: (hover || rating) >= n ? 1 : 0.28 }}>★</span>
-                      </button>
-                    ))}
+                    {[1, 2, 3, 4, 5].map((n) => {
+                      const acesa = (hover || rating) >= n;
+                      return (
+                        <button
+                          key={n}
+                          type="button"
+                          className="ht-star"
+                          disabled={avaliado}
+                          onMouseEnter={() => !avaliado && setHover(n)}
+                          onClick={() => !avaliado && setRating(n)}
+                          aria-label={`${n} ${n === 1 ? 'estrela' : 'estrelas'}`}
+                          aria-pressed={rating === n}
+                        >
+                          <IcoEstrela
+                            size={28}
+                            className={acesa ? 'ht-star-on' : 'ht-star-off'}
+                          />
+                        </button>
+                      );
+                    })}
                   </div>
                   {!avaliado && (
                     <>
@@ -308,11 +361,17 @@ function AulaView() {
                     </>
                   )}
                   {avaliado && (
-                    <p style={{ color: 'var(--ht-success)', fontSize: 13, margin: '10px 0 0', fontWeight: 600 }}>
+                    <p className="ht-success-msg" style={{ fontSize: 13, margin: '10px 0 0' }}>
+                      <IcoConcluida size={15} />
                       Obrigado pela avaliação!
                     </p>
                   )}
-                  {erro && <p className="ht-error">{erro}</p>}
+                  {erro && (
+                    <p className="ht-error">
+                      <IcoErro size={16} />
+                      {erro}
+                    </p>
+                  )}
                 </div>
               </div>
             )}

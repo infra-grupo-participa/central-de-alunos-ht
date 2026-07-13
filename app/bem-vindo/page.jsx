@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Logo from '@/components/Logo.jsx';
+import { IcoAvancar } from '@/components/icons.jsx';
 
 // Landing pública (teaser do Épico 0), preservada em /bem-vindo.
 export default function BemVindoPage() {
@@ -67,6 +68,7 @@ export default function BemVindoPage() {
         <div style={{ display: 'flex', gap: 12, marginTop: 34 }}>
           <button className="ht-btn ht-btn-primary" onClick={() => router.push('/login')}>
             Entrar na Central
+            <IcoAvancar size={17} />
           </button>
           <button className="ht-btn ht-btn-ghost">Como funciona</button>
         </div>

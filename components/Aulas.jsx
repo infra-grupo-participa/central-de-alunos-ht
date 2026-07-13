@@ -3,6 +3,31 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/supabase-browser.js';
+import { IcoConcluida, IcoAssistir, IcoBloqueada } from '@/components/icons.jsx';
+
+// Selo de estado da aula, a direita da linha: verde (feita), laranja (liberada),
+// cinza (ainda travada).
+function SeloEstado({ concluida, liberada }) {
+  if (concluida) {
+    return (
+      <span className="ht-lesson-tag ht-lesson-tag-ok" title="Concluída">
+        <IcoConcluida size={17} />
+      </span>
+    );
+  }
+  if (liberada) {
+    return (
+      <span className="ht-lesson-tag ht-lesson-tag-play" title="Assistir agora">
+        <IcoAssistir size={15} fill="currentColor" />
+      </span>
+    );
+  }
+  return (
+    <span className="ht-lesson-tag ht-lesson-tag-lock" title="Ainda bloqueada">
+      <IcoBloqueada size={15} />
+    </span>
+  );
+}
 
 function faltamDias(unlockAt) {
   if (!unlockAt) return 0;
@@ -31,7 +56,7 @@ export default function Aulas() {
         {aulas.map((l) => {
           const dias = faltamDias(l.unlock_at);
           const status = l.concluida
-            ? '✓ Concluída'
+            ? 'Concluída'
             : l.liberada
               ? 'Assistir agora'
               : `Libera em ${dias} ${dias === 1 ? 'dia' : 'dias'}`;
@@ -42,7 +67,7 @@ export default function Aulas() {
                 <strong>{l.titulo}</strong>
                 <small>{status}</small>
               </span>
-              <span className="ht-lesson-tag">{l.concluida ? '✓' : l.liberada ? '▶' : '🔒'}</span>
+              <SeloEstado concluida={l.concluida} liberada={l.liberada} />
             </>
           );
 

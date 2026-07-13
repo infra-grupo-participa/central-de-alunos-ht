@@ -1,4 +1,5 @@
 import Logo from '@/components/Logo.jsx';
+import { IcoCarregando } from '@/components/icons.jsx';
 
 // Tela de carregamento enquanto sessão/estado do aluno resolvem.
 export default function Splash() {
@@ -11,10 +12,11 @@ export default function Splash() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 16,
+        gap: 18,
       }}
     >
       <Logo size={46} />
+      <IcoCarregando size={22} className="ht-spin" style={{ color: 'var(--ht-orange)' }} />
       <span style={{ color: 'var(--ht-text-dim)', fontSize: 14, letterSpacing: '0.08em' }}>
         CARREGANDO SUA CENTRAL...
       </span>

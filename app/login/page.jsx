@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider.jsx';
 import Logo from '@/components/Logo.jsx';
+import { IcoEmail, IcoSenha, IcoAvancar, IcoErro } from '@/components/icons.jsx';
 
 // Tela de login — email + senha, na cara da marca HT.
 export default function LoginPage() {
@@ -79,30 +80,43 @@ export default function LoginPage() {
           <label className="ht-label" htmlFor="email">
             E-mail
           </label>
-          <input
-            id="email"
-            className="ht-input"
-            type="email"
-            autoComplete="email"
-            placeholder="seu@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          {/* O ícone vem depois do input no DOM de propósito: é o que permite o
+              seletor `.ht-input:focus + .ht-ico` acender ele no laranja ao focar. */}
+          <div className="ht-field">
+            <input
+              id="email"
+              className="ht-input"
+              type="email"
+              autoComplete="email"
+              placeholder="seu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <IcoEmail size={17} />
+          </div>
 
           <label className="ht-label" htmlFor="senha">
             Senha
           </label>
-          <input
-            id="senha"
-            className="ht-input"
-            type="password"
-            autoComplete="current-password"
-            placeholder="Sua senha de acesso"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-          />
+          <div className="ht-field">
+            <input
+              id="senha"
+              className="ht-input"
+              type="password"
+              autoComplete="current-password"
+              placeholder="Sua senha de acesso"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+            />
+            <IcoSenha size={17} />
+          </div>
 
-          {erro && <p className="ht-error">{erro}</p>}
+          {erro && (
+            <p className="ht-error">
+              <IcoErro size={16} />
+              {erro}
+            </p>
+          )}
 
           <button
             type="submit"
@@ -110,7 +124,14 @@ export default function LoginPage() {
             disabled={busy}
             style={{ width: '100%', marginTop: 22, opacity: busy ? 0.7 : 1 }}
           >
-            {busy ? 'Entrando...' : 'Entrar na Central'}
+            {busy ? (
+              'Entrando...'
+            ) : (
+              <>
+                Entrar na Central
+                <IcoAvancar size={17} />
+              </>
+            )}
           </button>
         </form>
       </div>

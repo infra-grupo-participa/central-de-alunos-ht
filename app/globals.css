@@ -25,6 +25,11 @@
   --ht-success: #22c55e;
   --ht-danger: #ef4444;
 
+  /* Podio do ranking (1o, 2o, 3o) */
+  --ht-gold: #f5c451;
+  --ht-silver: #cbd5e1;
+  --ht-bronze: #cd7f32;
+
   /* Tipografia */
   --ht-font-display: 'Archivo', system-ui, sans-serif; /* titulos pesados */
   --ht-font-body: 'Inter', system-ui, sans-serif;
@@ -70,6 +75,22 @@ h3 {
 
 .ht-accent {
   color: var(--ht-orange);
+}
+
+/* ---------------------------------------------------------------- Ícones
+   Todo SVG do app entra com .ht-ico (ver components/icons.jsx): herda a cor do
+   contexto (currentColor) e nunca encolhe dentro de um flex. */
+.ht-ico {
+  flex-shrink: 0;
+  vertical-align: -0.18em;
+}
+.ht-spin {
+  animation: ht-spin 0.9s linear infinite;
+}
+@keyframes ht-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .ht-btn {
@@ -158,7 +179,10 @@ h3 {
   border-radius: 999px;
 }
 .ht-nav-tab {
-  padding: 8px 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
   border-radius: 999px;
   text-decoration: none;
   color: var(--ht-text-dim);
@@ -190,9 +214,18 @@ h3 {
   .ht-nav-brand strong {
     display: none;
   }
+  /* No mobile a aba vira só o ícone (o rótulo continua no aria-label). */
   .ht-nav-tab {
-    padding: 7px 13px;
-    font-size: 13px;
+    padding: 8px 14px;
+  }
+  .ht-nav-tab-label {
+    display: none;
+  }
+  .ht-nav-sair .ht-nav-sair-label {
+    display: none;
+  }
+  .ht-nav-sair {
+    padding: 8px 12px;
   }
 }
 
@@ -226,12 +259,40 @@ h3 {
   color: var(--ht-text-dim);
   margin: 16px 0 6px;
 }
+
+/* Campo com ícone à esquerda (login, troca de senha) */
+.ht-field {
+  position: relative;
+  display: block;
+}
+.ht-field .ht-ico {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ht-text-muted);
+  pointer-events: none;
+  transition: color 0.15s ease;
+}
+.ht-field .ht-input {
+  padding-left: 45px;
+}
+.ht-field .ht-input:focus + .ht-ico {
+  color: var(--ht-orange);
+}
+
 .ht-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--ht-danger);
   font-size: 14px;
   margin-top: 12px;
 }
 .ht-success-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--ht-success);
   font-size: 14px;
   margin-top: 12px;
@@ -247,6 +308,27 @@ h3 {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
+}
+/* Selo do ícone do banner: quadrado arredondado, destaca sem gritar. */
+.ht-banner-ico {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.ht-banner-normal .ht-banner-ico,
+.ht-banner-ficha .ht-banner-ico {
+  color: var(--ht-orange);
+}
+.ht-banner-urgente .ht-banner-ico {
+  color: var(--ht-danger);
+}
+.ht-banner-live .ht-banner-ico {
+  color: #fff;
 }
 .ht-banner-live {
   background: linear-gradient(90deg, var(--ht-orange-deep), var(--ht-orange-bright));
@@ -375,8 +457,13 @@ h3 {
   background: var(--ht-bg-2);
   border: 1px solid var(--ht-border);
   border-radius: var(--ht-radius);
-  padding: 16px 12px;
+  padding: 14px 12px 16px;
   text-align: center;
+}
+.ht-stat-ico {
+  display: block;
+  margin: 0 auto 8px;
+  color: var(--ht-text-muted);
 }
 .ht-stat-n {
   display: block;
@@ -399,19 +486,31 @@ h3 {
 /* Estrelas de avaliacao */
 .ht-stars {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 .ht-star {
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
-  font-size: 30px;
   line-height: 1;
   color: var(--ht-orange);
+  transition: transform 0.12s ease;
+}
+.ht-star:not(:disabled):hover {
+  transform: scale(1.12);
 }
 .ht-star:disabled {
   cursor: default;
+}
+/* Apagada = contorno em cinza; acesa = preenchida no laranja da marca. */
+.ht-star-off {
+  color: var(--ht-text-muted);
+  fill: none;
+}
+.ht-star-on {
+  color: var(--ht-orange);
+  fill: currentColor;
 }
 .ht-lesson-num {
   flex-shrink: 0;
@@ -439,9 +538,29 @@ h3 {
   color: var(--ht-text-muted);
   font-size: 12px;
 }
+/* Selo de estado da aula (concluída / liberada / bloqueada) */
 .ht-lesson-tag {
   flex-shrink: 0;
-  font-size: 15px;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--ht-bg-2);
+  border: 1px solid var(--ht-border);
+}
+.ht-lesson-tag-ok {
+  color: var(--ht-success);
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.1);
+}
+.ht-lesson-tag-play {
+  color: var(--ht-orange);
+  border-color: rgba(249, 115, 22, 0.35);
+  background: rgba(249, 115, 22, 0.1);
+}
+.ht-lesson-tag-lock {
+  color: var(--ht-text-muted);
 }
 
 /* ------------------------------------------------------------- Ranking */
@@ -478,10 +597,22 @@ h3 {
 .ht-rank-pos {
   flex-shrink: 0;
   width: 38px;
+  display: flex;
+  align-items: center;
   font-family: var(--ht-font-display);
   font-weight: 800;
   color: var(--ht-text-dim);
   font-size: 15px;
+}
+/* Pódio: metálicos do 1º ao 3º, no lugar das medalhas de emoji. */
+.ht-rank-1 {
+  color: var(--ht-gold);
+}
+.ht-rank-2 {
+  color: var(--ht-silver);
+}
+.ht-rank-3 {
+  color: var(--ht-bronze);
 }
 .ht-rank-nome {
   flex: 1;
@@ -512,9 +643,9 @@ h3 {
   font-variant-numeric: tabular-nums;
 }
 .ht-rank-sep {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--ht-text-muted);
-  font-size: 12px;
-  letter-spacing: 0.2em;
   padding: 6px 0;
 }

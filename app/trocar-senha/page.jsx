@@ -6,6 +6,7 @@ import Guard from '@/components/Guard.jsx';
 import { useMe } from '@/components/MeProvider.jsx';
 import { api } from '@/lib/supabase-browser.js';
 import Logo from '@/components/Logo.jsx';
+import { IcoSenha, IcoCheck, IcoErro } from '@/components/icons.jsx';
 
 // Primeiro acesso: força a troca da senha genérica antes de liberar a home.
 function TrocarSenhaView() {
@@ -83,30 +84,41 @@ function TrocarSenhaView() {
           <label className="ht-label" htmlFor="nova-senha">
             Nova senha
           </label>
-          <input
-            id="nova-senha"
-            className="ht-input"
-            type="password"
-            autoComplete="new-password"
-            placeholder="Mínimo de 8 caracteres"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-          />
+          <div className="ht-field">
+            <input
+              id="nova-senha"
+              className="ht-input"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Mínimo de 8 caracteres"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+            />
+            <IcoSenha size={17} />
+          </div>
 
           <label className="ht-label" htmlFor="confirma-senha">
             Confirme a nova senha
           </label>
-          <input
-            id="confirma-senha"
-            className="ht-input"
-            type="password"
-            autoComplete="new-password"
-            placeholder="Repita a senha"
-            value={confirma}
-            onChange={(e) => setConfirma(e.target.value)}
-          />
+          <div className="ht-field">
+            <input
+              id="confirma-senha"
+              className="ht-input"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Repita a senha"
+              value={confirma}
+              onChange={(e) => setConfirma(e.target.value)}
+            />
+            <IcoSenha size={17} />
+          </div>
 
-          {erro && <p className="ht-error">{erro}</p>}
+          {erro && (
+            <p className="ht-error">
+              <IcoErro size={16} />
+              {erro}
+            </p>
+          )}
 
           <button
             type="submit"
@@ -114,7 +126,14 @@ function TrocarSenhaView() {
             disabled={busy}
             style={{ width: '100%', marginTop: 22, opacity: busy ? 0.7 : 1 }}
           >
-            {busy ? 'Salvando...' : 'Salvar e entrar'}
+            {busy ? (
+              'Salvando...'
+            ) : (
+              <>
+                <IcoCheck size={17} strokeWidth={2.5} />
+                Salvar e entrar
+              </>
+            )}
           </button>
         </form>
       </div>

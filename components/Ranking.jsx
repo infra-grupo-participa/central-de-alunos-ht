@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/supabase-browser.js';
+import { IcoTrofeu, IcoMedalha, IcoReticencias, IcoAvancar } from '@/components/icons.jsx';
 
 // Ranking ao vivo: atualiza sozinho a cada 20s. `compact` = versao pequena da
 // home (top 5 + link pro ranking completo); sem ela = pagina /ranking completa.
@@ -50,7 +51,9 @@ export default function Ranking({ compact = false }) {
 
       {!euNasLinhas && eu && (
         <>
-          <div className="ht-rank-sep">• • •</div>
+          <div className="ht-rank-sep">
+            <IcoReticencias size={20} />
+          </div>
           <ol className="ht-rank">
             <RankRow x={eu} />
           </ol>
@@ -63,18 +66,29 @@ export default function Ranking({ compact = false }) {
           className="ht-btn ht-btn-ghost"
           style={{ width: '100%', marginTop: 14, textDecoration: 'none', fontSize: 14 }}
         >
-          Ver ranking completo →
+          Ver ranking completo
+          <IcoAvancar size={16} />
         </Link>
       )}
     </section>
   );
 }
 
+// Pódio: troféu no 1º, medalha no 2º e 3º, cada um no seu metal. Do 4º em diante,
+// só o número — o destaque tem que ficar em quem está na frente.
+function Podio({ posicao }) {
+  if (posicao === 1) return <IcoTrofeu size={19} className="ht-rank-1" aria-label="1º lugar" />;
+  if (posicao === 2) return <IcoMedalha size={19} className="ht-rank-2" aria-label="2º lugar" />;
+  if (posicao === 3) return <IcoMedalha size={19} className="ht-rank-3" aria-label="3º lugar" />;
+  return <>{posicao}º</>;
+}
+
 function RankRow({ x }) {
-  const medalha = x.posicao === 1 ? '🥇' : x.posicao === 2 ? '🥈' : x.posicao === 3 ? '🥉' : null;
   return (
     <li className={`ht-rank-row ${x.eu ? 'ht-rank-me' : ''}`}>
-      <span className="ht-rank-pos">{medalha || `${x.posicao}º`}</span>
+      <span className="ht-rank-pos">
+        <Podio posicao={x.posicao} />
+      </span>
       <span className="ht-rank-nome">
         {x.nome}
         {x.eu && <span className="ht-rank-voce">você</span>}
