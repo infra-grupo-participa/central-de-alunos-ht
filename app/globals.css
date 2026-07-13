@@ -233,27 +233,153 @@ h3 {
   color: var(--ht-text-muted);
 }
 
-/* Cards teaser (em breve) */
-.ht-teaser-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-.ht-teaser-card {
-  padding: 22px;
+/* ---------------------------------------------------------- Aulas / player */
+.ht-video-wrap {
   position: relative;
-  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
 }
-.ht-teaser-card .ht-soon {
+.ht-video-wrap iframe {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.ht-lessons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ht-lesson {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  border-radius: var(--ht-radius);
+  border: 1px solid var(--ht-border);
+  background: var(--ht-surface);
+  color: var(--ht-text);
+  cursor: pointer;
+  font-family: var(--ht-font-body);
+  transition: border-color 0.15s ease, transform 0.08s ease;
+}
+.ht-lesson:hover:not(:disabled) {
+  border-color: var(--ht-orange);
+}
+.ht-lesson-ativa {
+  border-color: var(--ht-orange);
+  box-shadow: 0 0 0 2px var(--ht-orange-glow);
+}
+.ht-lesson-lock {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.ht-lesson-num {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-family: var(--ht-font-display);
+  font-weight: 900;
+  background: var(--ht-bg-2);
+  color: var(--ht-orange);
+}
+.ht-lesson-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.ht-lesson-body strong {
+  font-size: 15px;
+}
+.ht-lesson-body small {
+  color: var(--ht-text-muted);
+  font-size: 12px;
+}
+.ht-lesson-tag {
+  flex-shrink: 0;
+  font-size: 15px;
+}
+
+/* ------------------------------------------------------------- Ranking */
+.ht-live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--ht-orange);
+  box-shadow: 0 0 0 0 var(--ht-orange-glow);
+  animation: ht-pulse 1.6s ease-in-out infinite;
+}
+.ht-rank {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ht-rank-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: var(--ht-radius-sm);
+}
+.ht-rank-row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.02);
+}
+.ht-rank-me {
+  background: linear-gradient(90deg, rgba(249, 115, 22, 0.18), rgba(249, 115, 22, 0.05));
+  border: 1px solid var(--ht-orange);
+}
+.ht-rank-pos {
+  flex-shrink: 0;
+  width: 38px;
+  font-family: var(--ht-font-display);
+  font-weight: 800;
+  color: var(--ht-text-dim);
+  font-size: 15px;
+}
+.ht-rank-nome {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+.ht-rank-voce {
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--ht-text-muted);
-  border: 1px solid var(--ht-border);
+  color: #fff;
+  background: var(--ht-orange-deep);
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 2px 8px;
+}
+.ht-rank-pts {
+  flex-shrink: 0;
+  font-family: var(--ht-font-display);
+  font-weight: 800;
+  color: var(--ht-orange);
+  font-variant-numeric: tabular-nums;
+}
+.ht-rank-sep {
+  text-align: center;
+  color: var(--ht-text-muted);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  padding: 6px 0;
 }

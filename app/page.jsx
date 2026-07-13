@@ -7,6 +7,8 @@ import { useAuth } from '@/components/AuthProvider.jsx';
 import { useMe } from '@/components/MeProvider.jsx';
 import { api } from '@/lib/supabase-browser.js';
 import Logo from '@/components/Logo.jsx';
+import Aulas from '@/components/Aulas.jsx';
+import Ranking from '@/components/Ranking.jsx';
 import { splitCountdown, pad2, formatDateLong } from '@/lib/format.js';
 
 // A Central do Aluno — home protegida do Épico 1.
@@ -151,33 +153,11 @@ function HomeView() {
         {/* Contagem regressiva */}
         <Countdown cohort={cohort} />
 
-        {/* Teaser do que vem por aí */}
-        <section>
-          <h2
-            style={{
-              fontSize: 20,
-              textTransform: 'uppercase',
-              letterSpacing: '0.02em',
-              marginBottom: 14,
-            }}
-          >
-            O que vem por aí<span className="ht-accent">.</span>
-          </h2>
-          <div className="ht-teaser-grid">
-            <TeaserCard
-              titulo="Aulas liberadas dia a dia"
-              texto="Uma aula por dia, no ritmo certo. Assista, conclua e avance na frente de todo mundo."
-            />
-            <TeaserCard
-              titulo="Deveres de casa"
-              texto="Ação gera resultado. Entregue os deveres e acumule pontos que separam quem faz de quem assiste."
-            />
-            <TeaserCard
-              titulo="Ranking ao vivo"
-              texto="Seu nome contra o dos outros alunos, em tempo real. O topo é de quem se move primeiro."
-            />
-          </div>
-        </section>
+        {/* Aulas (playlist + player) */}
+        <Aulas />
+
+        {/* Ranking ao vivo */}
+        <Ranking />
       </main>
 
       <footer style={{ padding: '16px 24px', color: 'var(--ht-text-muted)', fontSize: 13 }}>
@@ -325,20 +305,6 @@ function Countdown({ cohort }) {
         {formatDateLong(alvo.data)} — marque na agenda. Quem chega atrasado assiste de fora.
       </p>
     </section>
-  );
-}
-
-// ------------------------------------------------------------- Teaser cards
-
-function TeaserCard({ titulo, texto }) {
-  return (
-    <div className="ht-card ht-teaser-card">
-      <span className="ht-soon">Em breve</span>
-      <h3 style={{ fontSize: 17, textTransform: 'uppercase', paddingRight: 70 }}>{titulo}</h3>
-      <p style={{ color: 'var(--ht-text-dim)', fontSize: 14, lineHeight: 1.5, margin: '10px 0 0' }}>
-        {texto}
-      </p>
-    </div>
   );
 }
 
