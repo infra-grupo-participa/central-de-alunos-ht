@@ -1,5 +1,5 @@
 import { requireAuth } from '@/lib/auth.js';
-import { query } from '@/lib/db.js';
+import { ht, unwrap } from '@/lib/htdb.js';
 import { supabaseAdmin } from '@/lib/supabase-admin.js';
 
 export const runtime = 'nodejs';
@@ -36,7 +36,9 @@ export async function POST(request) {
         { status: 400 }
       );
     }
-    await query('update ht.profiles set must_change_password = false where id = $1', [user.id]);
+    unwrap(
+      await ht.from('profiles').update({ must_change_password: false }).eq('id', user.id)
+    );
     return Response.json({ ok: true, mensagem: 'Senha atualizada. Bem-vindo à Central.' });
   } catch (e) {
     console.error('[api/me/senha]', e);

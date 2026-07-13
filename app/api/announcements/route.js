@@ -1,5 +1,5 @@
 import { requireAuth } from '@/lib/auth.js';
-import { query, one } from '@/lib/db.js';
+import { ht, unwrap } from '@/lib/htdb.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,26 +12,33 @@ export async function GET(request) {
   try {
     let cohortId = profile?.cohort_id || null;
     if (!cohortId) {
-      const c = await one(
-        `select id from ht.cohorts
-          where status = 'ativo' and coalesce(is_template, false) = false
-          order by data_inicio desc nulls last
-          limit 1`
+      const rows = unwrap(
+        await ht
+          .from('cohorts')
+          .select('id')
+          .eq('status', 'ativo')
+          .or('is_template.is.null,is_template.eq.false')
+          .order('data_inicio', { ascending: false, nullsFirst: false })
+          .limit(1)
       );
-      cohortId = c?.id || null;
+      cohortId = rows?.[0]?.id || null;
     }
     if (!cohortId) return Response.json([]);
 
-    const rows = await query(
-      `select * from ht.announcements
-        where cohort_id = $1
-          and ativo = true
-          and (starts_at is null or starts_at <= now())
-          and (ends_at is null or ends_at >= now())
-        order by prioridade desc, created_at desc`,
-      [cohortId]
+    // Sem milissegundos: evita o '.' quebrar o parser do filtro or() do PostgREST.
+    const now = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+    const rows = unwrap(
+      await ht
+        .from('announcements')
+        .select('*')
+        .eq('cohort_id', cohortId)
+        .eq('ativo', true)
+        .or(`starts_at.is.null,starts_at.lte.${now}`)
+        .or(`ends_at.is.null,ends_at.gte.${now}`)
+        .order('prioridade', { ascending: false })
+        .order('created_at', { ascending: false })
     );
-    return Response.json(rows);
+    return Response.json(rows || []);
   } catch (e) {
     console.error('[api/announcements]', e);
     return Response.json({ error: 'erro_interno' }, { status: 500 });

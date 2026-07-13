@@ -1,21 +1,27 @@
 import { requireAuth } from '@/lib/auth.js';
-import { one } from '@/lib/db.js';
+import { ht, unwrap } from '@/lib/htdb.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// Cohort do aluno (via profile) ou fallback: cohort ativo mais recente.
+// Cohort do aluno (via profile) ou fallback: cohort ativo mais recente (nao-template).
 async function resolveCohort(profile) {
   if (profile?.cohort_id) {
-    const c = await one('select * from ht.cohorts where id = $1', [profile.cohort_id]);
+    const c = unwrap(
+      await ht.from('cohorts').select('*').eq('id', profile.cohort_id).maybeSingle()
+    );
     if (c) return c;
   }
-  return one(
-    `select * from ht.cohorts
-      where status = 'ativo' and coalesce(is_template, false) = false
-      order by data_inicio desc nulls last
-      limit 1`
+  const rows = unwrap(
+    await ht
+      .from('cohorts')
+      .select('*')
+      .eq('status', 'ativo')
+      .or('is_template.is.null,is_template.eq.false')
+      .order('data_inicio', { ascending: false, nullsFirst: false })
+      .limit(1)
   );
+  return rows?.[0] || null;
 }
 
 // Retorna o "estado do aluno": profile + cohort + settings + ficha.
@@ -27,39 +33,42 @@ export async function GET(request) {
     let profile = existing;
     if (!profile) {
       // Primeiro acesso: cria a linha minima do profile.
-      profile = await one(
-        `insert into ht.profiles (id, email)
-         values ($1, $2)
-         on conflict (id) do update set email = excluded.email
-         returning *`,
-        [user.id, user.email || null]
+      profile = unwrap(
+        await ht
+          .from('profiles')
+          .upsert({ id: user.id, email: user.email || null }, { onConflict: 'id' })
+          .select()
+          .single()
       );
     }
 
-    profile = await one(
-      'update ht.profiles set last_seen_at = now() where id = $1 returning *',
-      [user.id]
-    );
+    profile =
+      unwrap(
+        await ht
+          .from('profiles')
+          .update({ last_seen_at: new Date().toISOString() })
+          .eq('id', user.id)
+          .select()
+          .maybeSingle()
+      ) || profile;
 
     const cohort = await resolveCohort(profile);
 
     const settings = cohort
-      ? await one('select * from ht.settings where cohort_id = $1', [cohort.id])
+      ? unwrap(await ht.from('settings').select('*').eq('cohort_id', cohort.id).maybeSingle())
       : null;
 
-    let ficha = await one('select * from ht.ficha_interesse where user_id = $1', [user.id]);
+    let ficha = unwrap(
+      await ht.from('ficha_interesse').select('*').eq('user_id', user.id).maybeSingle()
+    );
     if (!ficha) {
-      ficha = await one(
-        `insert into ht.ficha_interesse (user_id, status)
-         values ($1, 'pendente')
-         on conflict (user_id) do nothing
-         returning *`,
-        [user.id]
+      ficha = unwrap(
+        await ht
+          .from('ficha_interesse')
+          .upsert({ user_id: user.id, status: 'pendente' }, { onConflict: 'user_id' })
+          .select()
+          .single()
       );
-      // Corrida rara: outra requisicao criou antes; releia.
-      if (!ficha) {
-        ficha = await one('select * from ht.ficha_interesse where user_id = $1', [user.id]);
-      }
     }
 
     return Response.json({ profile, cohort, settings, ficha });

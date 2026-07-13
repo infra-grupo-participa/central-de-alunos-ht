@@ -11,9 +11,11 @@ Subdomínio de produção: `central.holdingtotal.com.br`
 
 - **Framework:** Next.js (App Router) — páginas + API (`/api/*`) no mesmo app
   - `app/` — páginas (`/`, `/login`, `/trocar-senha`, `/bem-vindo`) e rotas de API
-  - `lib/` — servidor: pg → schema `ht`, Supabase `service_role`, auth, env
+  - `lib/` — servidor: `htdb.js` (schema `ht` via Data API + service_role), `auth.js`, `env.js`
   - `components/` — providers (auth/estado do aluno) e UI, identidade HT (preto + laranja)
 - **Banco/Auth:** Supabase (projeto hub `mbvybujpkwuorhtdzcde`, schema isolado `ht`)
+  - **Sem conexão Postgres direta** (nada de `DATABASE_URL`): tudo via `supabase-js`.
+    O schema `ht` é exposto na Data API e só o `service_role` tem grant nele.
 - **Player:** YouTube embutido + timer de conclusão (trocável por Panda)
 - **Email:** Resend · **Checkout:** Hotmart · **Host:** Hostinger (deploy Next.js via Git)
 

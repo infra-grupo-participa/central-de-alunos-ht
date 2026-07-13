@@ -35,20 +35,31 @@ NODE_ENV=production
 SUPABASE_URL=https://mbvybujpkwuorhtdzcde.supabase.co
 SUPABASE_ANON_KEY=sb_publishable_ZCwMkDCoJ5_H7DHZ476TsQ_CesBbG9J
 SUPABASE_SERVICE_ROLE_KEY=<secreto — Supabase → Settings → API>
-DATABASE_URL=<pooler — Supabase → Settings → Database → Connection string (Transaction)>
 ADMIN_EMAILS=marcio@advmais.com
 CENTRAL_URL=https://central.holdingtotal.com.br
 NEXT_PUBLIC_SUPABASE_URL=https://mbvybujpkwuorhtdzcde.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_ZCwMkDCoJ5_H7DHZ476TsQ_CesBbG9J
 ```
 
+> **Não existe `DATABASE_URL`.** Toda a persistência vai pela Data API do
+> Supabase (`supabase-js`). O backend usa o `SUPABASE_SERVICE_ROLE_KEY` para
+> acessar o schema `ht`.
+
 Próximos épicos (deixar em branco por enquanto): `RESEND_API_KEY`,
 `RESEND_FROM`, `HOTMART_HOTTOK`.
 
-> **Modo degradado:** sem `SUPABASE_SERVICE_ROLE_KEY` e `DATABASE_URL` o app
-> **sobe mesmo assim** (front + login funcionam); as funções de banco (perfil,
-> ficha, avisos, ranking) só ativam quando essas duas forem definidas.
-> As `NEXT_PUBLIC_*` têm default no código, mas defini-las é boa prática.
+> **Modo degradado:** sem `SUPABASE_SERVICE_ROLE_KEY` o app **sobe mesmo assim**
+> (front + login funcionam); as funções de banco (perfil, ficha, avisos, ranking)
+> só ativam quando ele for definido. As `NEXT_PUBLIC_*` têm default no código.
+
+### Pré-requisito no Supabase (feito uma vez)
+
+O schema `ht` precisa estar **exposto na Data API** e com GRANT ao `service_role`:
+
+- **Settings → API → Exposed schemas**: incluir `ht` (além de `public`, etc.).
+- GRANTs (via SQL, já aplicados): `usage` no schema + `all` nas tabelas/sequences
+  para `service_role`. O `anon` **não** recebe grant — o `ht` continua privado ao
+  backend mesmo exposto.
 
 ## 4. Deploy
 

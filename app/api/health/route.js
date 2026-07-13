@@ -1,25 +1,22 @@
-import { one } from '@/lib/db.js';
-import { hasServiceRole, hasDatabase } from '@/lib/env.js';
+import { ht } from '@/lib/htdb.js';
+import { hasServiceRole } from '@/lib/env.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   let db = 'ok';
-  if (!hasDatabase) {
-    db = 'nao_configurado';
-  } else {
-    try {
-      await one('select 1 as ok');
-    } catch (e) {
-      db = 'erro: ' + e.message;
-    }
+  try {
+    const { error } = await ht.from('cohorts').select('id').limit(1);
+    if (error) db = 'erro: ' + error.message;
+  } catch (e) {
+    db = 'erro: ' + e.message;
   }
   return Response.json({
     status: 'ok',
     db,
-    config: { service_role: hasServiceRole, database: hasDatabase },
-    modo: hasServiceRole && hasDatabase ? 'completo' : 'degradado',
+    config: { service_role: hasServiceRole },
+    modo: hasServiceRole && db === 'ok' ? 'completo' : 'degradado',
     ts: new Date().toISOString(),
   });
 }

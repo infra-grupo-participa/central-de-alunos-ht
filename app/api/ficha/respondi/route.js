@@ -1,5 +1,5 @@
 import { requireAuth } from '@/lib/auth.js';
-import { query, one } from '@/lib/db.js';
+import { ht, unwrap } from '@/lib/htdb.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,32 +10,41 @@ export async function POST(request) {
   if (unauthorized) return Response.json({ error: 'nao_autenticado' }, { status: 401 });
 
   try {
-    const existente = await one('select * from ht.ficha_interesse where user_id = $1', [user.id]);
+    const existente = unwrap(
+      await ht.from('ficha_interesse').select('*').eq('user_id', user.id).maybeSingle()
+    );
     const jaRespondida = existente?.status === 'respondida';
+    const respondidaAt = existente?.respondida_at || new Date().toISOString();
 
-    const ficha = await one(
-      `insert into ht.ficha_interesse (user_id, status, respondida_at)
-       values ($1, 'respondida', now())
-       on conflict (user_id) do update
-         set status = 'respondida',
-             respondida_at = coalesce(ficha_interesse.respondida_at, now())
-       returning *`,
-      [user.id]
+    const ficha = unwrap(
+      await ht
+        .from('ficha_interesse')
+        .upsert(
+          { user_id: user.id, status: 'respondida', respondida_at: respondidaAt },
+          { onConflict: 'user_id' }
+        )
+        .select()
+        .single()
     );
 
     let pontos = 0;
     if (!jaRespondida) {
-      // Dupla guarda contra credito duplicado (corrida entre requisicoes).
-      const credito = await query(
-        `insert into ht.points_ledger (user_id, source, points)
-         select $1, 'ficha', 50
-          where not exists (
-            select 1 from ht.points_ledger where user_id = $1 and source = 'ficha'
-          )
-         returning points`,
-        [user.id]
+      // Guarda contra credito duplicado: so credita se ainda nao houver linha 'ficha'.
+      const existentePts = unwrap(
+        await ht
+          .from('points_ledger')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('source', 'ficha')
+          .limit(1)
+          .maybeSingle()
       );
-      pontos = credito.length ? 50 : 0;
+      if (!existentePts) {
+        unwrap(
+          await ht.from('points_ledger').insert({ user_id: user.id, source: 'ficha', points: 50 })
+        );
+        pontos = 50;
+      }
     }
 
     return Response.json({
