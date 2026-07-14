@@ -11,6 +11,7 @@
 import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left.mjs';
 import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right.mjs';
 import CalendarClock from 'lucide-react/dist/esm/icons/calendar-clock.mjs';
+import ChartColumn from 'lucide-react/dist/esm/icons/chart-column.mjs';
 import Check from 'lucide-react/dist/esm/icons/check.mjs';
 import CircleAlert from 'lucide-react/dist/esm/icons/circle-alert.mjs';
 import CircleCheck from 'lucide-react/dist/esm/icons/circle-check.mjs';
@@ -18,6 +19,7 @@ import CirclePlay from 'lucide-react/dist/esm/icons/circle-play.mjs';
 import ClipboardList from 'lucide-react/dist/esm/icons/clipboard-list.mjs';
 import Clock from 'lucide-react/dist/esm/icons/clock.mjs';
 import Ellipsis from 'lucide-react/dist/esm/icons/ellipsis.mjs';
+import Eye from 'lucide-react/dist/esm/icons/eye.mjs';
 import House from 'lucide-react/dist/esm/icons/house.mjs';
 import LoaderCircle from 'lucide-react/dist/esm/icons/loader-circle.mjs';
 import Lock from 'lucide-react/dist/esm/icons/lock.mjs';
@@ -27,6 +29,7 @@ import Medal from 'lucide-react/dist/esm/icons/medal.mjs';
 import Megaphone from 'lucide-react/dist/esm/icons/megaphone.mjs';
 import Play from 'lucide-react/dist/esm/icons/play.mjs';
 import Radio from 'lucide-react/dist/esm/icons/radio.mjs';
+import Search from 'lucide-react/dist/esm/icons/search.mjs';
 import Star from 'lucide-react/dist/esm/icons/star.mjs';
 import TriangleAlert from 'lucide-react/dist/esm/icons/triangle-alert.mjs';
 import Trophy from 'lucide-react/dist/esm/icons/trophy.mjs';
@@ -88,3 +91,8 @@ export const IcoCarregando = icone(LoaderCircle);
 // Formularios
 export const IcoEmail = icone(Mail);
 export const IcoSenha = icone(Lock);
+
+// Painel interno (admin)
+export const IcoMetricas = icone(ChartColumn);
+export const IcoBusca = icone(Search);
+export const IcoOlho = icone(Eye);

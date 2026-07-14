@@ -31,7 +31,15 @@ export function AuthProvider({ children }) {
     return supabase.auth.signOut();
   }
 
-  const value = { session, user: session?.user ?? null, loading, signIn, signOut };
+  // Dispara o e-mail de recuperacao. O link volta para /redefinir-senha, onde o
+  // proprio Supabase cria a sessao a partir do token e a pessoa define a senha.
+  async function resetSenha(email) {
+    return supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/redefinir-senha`,
+    });
+  }
+
+  const value = { session, user: session?.user ?? null, loading, signIn, signOut, resetSenha };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

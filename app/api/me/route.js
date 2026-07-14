@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/auth.js';
+import { isAdmin, requireAuth } from '@/lib/auth.js';
 import { ht, unwrap } from '@/lib/htdb.js';
 import { fichaFormUrl } from '@/lib/env.js';
 
@@ -72,7 +72,16 @@ export async function GET(request) {
       );
     }
 
-    return Response.json({ profile, cohort, settings, ficha, ficha_url: fichaFormUrl(user) });
+    return Response.json({
+      profile,
+      cohort,
+      settings,
+      ficha,
+      ficha_url: fichaFormUrl(user),
+      // O front usa isso so pra decidir o que MOSTRAR (aba Metricas). Quem
+      // protege os dados de verdade e o requireAdmin nas rotas /api/admin/*.
+      is_admin: await isAdmin(user),
+    });
   } catch (e) {
     console.error('[api/me]', e);
     return Response.json({ error: 'erro_interno' }, { status: 500 });

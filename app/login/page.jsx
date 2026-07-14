@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider.jsx';
 import Logo from '@/components/Logo.jsx';
@@ -95,9 +96,17 @@ export default function LoginPage() {
             <IcoEmail size={17} />
           </div>
 
-          <label className="ht-label" htmlFor="senha">
-            Senha
-          </label>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+            <label className="ht-label" htmlFor="senha" style={{ flex: 1 }}>
+              Senha
+            </label>
+            <Link
+              href="/esqueci-senha"
+              style={{ color: 'var(--ht-text-muted)', fontSize: 12.5, whiteSpace: 'nowrap' }}
+            >
+              Esqueci minha senha
+            </Link>
+          </div>
           <div className="ht-field">
             <input
               id="senha"

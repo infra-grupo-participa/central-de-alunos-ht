@@ -4,13 +4,17 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Logo from '@/components/Logo.jsx';
 import { useAuth } from '@/components/AuthProvider.jsx';
-import { IcoHome, IcoAulas, IcoRanking, IcoSair } from '@/components/icons.jsx';
+import { useMe } from '@/components/MeProvider.jsx';
+import { IcoHome, IcoAulas, IcoRanking, IcoSair, IcoMetricas } from '@/components/icons.jsx';
 
 const TABS = [
   { href: '/', label: 'Home', Ico: IcoHome },
   { href: '/aulas', label: 'Aulas', Ico: IcoAulas },
   { href: '/ranking', label: 'Ranking', Ico: IcoRanking },
 ];
+
+// So aparece pra quem e admin (o /api/me diz). Aluno nem ve a aba.
+const TAB_ADMIN = { href: '/admin', label: 'Métricas', Ico: IcoMetricas };
 
 function ativo(href, pathname) {
   if (href === '/') return pathname === '/';
@@ -22,6 +26,9 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
+  const { me } = useMe();
+
+  const tabs = me?.is_admin ? [...TABS, TAB_ADMIN] : TABS;
 
   async function sair() {
     await signOut();
@@ -36,7 +43,7 @@ export default function Navbar() {
       </Link>
 
       <nav className="ht-nav-tabs">
-        {TABS.map(({ href, label, Ico }) => (
+        {tabs.map(({ href, label, Ico }) => (
           <Link
             key={href}
             href={href}
