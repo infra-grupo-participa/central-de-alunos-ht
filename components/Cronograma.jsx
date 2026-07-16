@@ -31,7 +31,18 @@ function rotuloDia(unlockAt) {
 }
 
 // Contagem regressiva do card: visível e clara, sem gritar.
-function CountCard({ unlockAt, agora }) {
+// O relógio vive AQUI dentro (e não no pai): só este span re-renderiza a cada
+// segundo, em vez do trilho inteiro — o resto da página fica parado.
+function CountCard({ unlockAt }) {
+  const [agora, setAgora] = useState(null);
+
+  useEffect(() => {
+    if (!unlockAt) return undefined;
+    setAgora(Date.now());
+    const t = setInterval(() => setAgora(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [unlockAt]);
+
   if (!unlockAt || agora === null) return null;
   const ms = new Date(unlockAt).getTime() - agora;
   if (ms <= 0) return null;
@@ -59,25 +70,14 @@ function estadoDaAula(a, idHoje) {
 
 export default function Cronograma({ aulas }) {
   const trilhoRef = useRef(null);
-  const [agora, setAgora] = useState(null);
   const [podeEsq, setPodeEsq] = useState(false);
   const [podeDir, setPodeDir] = useState(false);
-
-  const temBloqueada = useMemo(() => (aulas || []).some((a) => !a.liberada && a.unlock_at), [aulas]);
 
   // "Aula de hoje" = a última liberada ainda sem exercício concluído.
   const idHoje = useMemo(() => {
     const liberadas = (aulas || []).filter((a) => a.liberada && !a.concluida);
     return liberadas.length ? liberadas[liberadas.length - 1].id : null;
   }, [aulas]);
-
-  // Um relógio só para todos os cards.
-  useEffect(() => {
-    if (!temBloqueada) return undefined;
-    setAgora(Date.now());
-    const t = setInterval(() => setAgora(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, [temBloqueada]);
 
   // Habilita/desabilita as setas conforme a posição do trilho.
   const atualizarSetas = useCallback(() => {
@@ -247,7 +247,7 @@ export default function Cronograma({ aulas }) {
               <div key={a.id} className="ht-crono-card ht-crono-lock" aria-disabled="true">
                 <span className="ht-crono-thumb">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={youtubeThumb(a.video_id)} alt="" loading="lazy" />
+                  <img src={youtubeThumb(a.video_id)} alt="" loading="lazy" decoding="async" width={480} height={270} />
                   <span className="ht-crono-chip ht-chip-dia">Aula {a.day_index}</span>
                   <span className="ht-crono-play ht-crono-cadeado">
                     <IcoBloqueada size={26} />
@@ -259,7 +259,7 @@ export default function Cronograma({ aulas }) {
                   <strong className="ht-tease" aria-hidden="true">
                     {titulo}
                   </strong>
-                  <CountCard unlockAt={a.unlock_at} agora={agora} />
+                  <CountCard unlockAt={a.unlock_at} />
                   <small>Libera {rotuloDia(a.unlock_at)}</small>
                 </span>
               </div>
@@ -279,7 +279,7 @@ export default function Cronograma({ aulas }) {
             >
               <span className="ht-crono-thumb">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={youtubeThumb(a.video_id)} alt={a.titulo} loading="lazy" />
+                <img src={youtubeThumb(a.video_id)} alt={a.titulo} loading="lazy" decoding="async" width={480} height={270} />
                 <span className={`ht-crono-chip ${ehHoje ? 'ht-chip-hoje' : 'ht-chip-dia'}`}>
                   {ehHoje ? 'Aula de hoje' : `Aula ${a.day_index}`}
                 </span>

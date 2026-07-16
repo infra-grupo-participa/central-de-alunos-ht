@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Guard from '@/components/Guard.jsx';
 import { useMe } from '@/components/MeProvider.jsx';
 import { api } from '@/lib/supabase-browser.js';
+import useTitle from '@/lib/useTitle.js';
 import Logo from '@/components/Logo.jsx';
 import { IcoVoltar, IcoImprimir } from '@/components/icons.jsx';
 
@@ -68,6 +69,7 @@ function RespostaCampo({ campo, respostas }) {
 }
 
 function WorkbookView() {
+  useTitle('Workbook');
   const { me } = useMe();
   const [itens, setItens] = useState(null);
 

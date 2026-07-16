@@ -8,6 +8,7 @@ import Navbar from '@/components/Navbar.jsx';
 import WhatsAppFloat from '@/components/WhatsAppFloat.jsx';
 import { useMe } from '@/components/MeProvider.jsx';
 import { api } from '@/lib/supabase-browser.js';
+import useTitle from '@/lib/useTitle.js';
 import { maskNome, maskTelefone, telefoneValido, soDigitos } from '@/lib/masks.js';
 import { IcoVoltar, IcoCheck, IcoConcluida, IcoErro } from '@/components/icons.jsx';
 
@@ -73,6 +74,7 @@ const PERGUNTAS = [
 ];
 
 function FichaView() {
+  useTitle('Ficha de interesse');
   const router = useRouter();
   const { me, refresh } = useMe();
   const [respostas, setRespostas] = useState({});

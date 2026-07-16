@@ -8,6 +8,7 @@ import Navbar from '@/components/Navbar.jsx';
 import WhatsAppFloat from '@/components/WhatsAppFloat.jsx';
 import { useMe } from '@/components/MeProvider.jsx';
 import { api } from '@/lib/supabase-browser.js';
+import useTitle from '@/lib/useTitle.js';
 import { maskNome, maskTelefone, telefoneValido } from '@/lib/masks.js';
 import { IcoVoltar, IcoCheck, IcoConcluida, IcoErro, IcoPerfil } from '@/components/icons.jsx';
 
@@ -20,6 +21,7 @@ const UFS = [
 // Meus dados — o aluno mantém as próprias informações. Linguagem simples,
 // um campo por vez, máscara em tudo que aceita máscara.
 function PerfilView() {
+  useTitle('Meus dados');
   const { me, refresh } = useMe();
   const cardRef = useRef(null);
   const [form, setForm] = useState(null);

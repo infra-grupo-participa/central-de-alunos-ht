@@ -10,6 +10,7 @@ import WatchGate from '@/components/WatchGate.jsx';
 import WhatsAppFloat from '@/components/WhatsAppFloat.jsx';
 import { useMe } from '@/components/MeProvider.jsx';
 import { api } from '@/lib/supabase-browser.js';
+import useTitle from '@/lib/useTitle.js';
 import { youtubeUrl } from '@/components/Cronograma.jsx';
 import { IcoVoltar, IcoCheck, IcoConcluida, IcoErro, IcoYoutube } from '@/components/icons.jsx';
 
@@ -18,6 +19,7 @@ function ExercicioView() {
   const router = useRouter();
   const { me } = useMe();
   const [ex, setEx] = useState(null);
+  useTitle(ex ? `Exercício ${ex.day_index}` : 'Exercício');
   const [respostas, setRespostas] = useState({});
   const [erro, setErro] = useState(null);
   const [msg, setMsg] = useState(null);

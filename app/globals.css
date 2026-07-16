@@ -31,9 +31,10 @@
   --ht-silver: #cbd5e1;
   --ht-bronze: #cd7f32;
 
-  /* Tipografia */
-  --ht-font-display: 'Archivo', system-ui, sans-serif; /* titulos pesados */
-  --ht-font-body: 'Inter', system-ui, sans-serif;
+  /* Tipografia — as famílias chegam self-hosted via next/font (layout.jsx);
+     os fallbacks cobrem o primeiro paint sem salto de layout perceptível. */
+  --ht-font-display: var(--font-archivo, 'Archivo'), system-ui, sans-serif; /* titulos pesados */
+  --ht-font-body: var(--font-inter, 'Inter'), system-ui, sans-serif;
 
   /* Formas */
   --ht-radius: 14px;
@@ -48,6 +49,11 @@ html,
 body {
   height: 100%;
   margin: 0;
+}
+html {
+  /* iOS não infla o texto ao girar a tela */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 body {
   background: var(--ht-bg);
@@ -1127,6 +1133,19 @@ h3 {
   border-color: var(--ht-orange);
   background: linear-gradient(90deg, rgba(249, 115, 22, 0.14), rgba(249, 115, 22, 0.04));
 }
+/* No celular, a ação do exercício vira botão de linha inteira — alvo de toque
+   generoso, sem caçar botãozinho. */
+@media (max-width: 560px) {
+  .ht-ex-card > .ht-btn,
+  .ht-ex-card > div > .ht-btn {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+  .ht-ex-lock-label {
+    flex: 1 1 100%;
+    text-align: center;
+  }
+}
 
 /* ------------------------------------------------------------- Modal */
 .ht-modal-overlay {
@@ -1145,6 +1164,9 @@ h3 {
   width: 100%;
   max-width: 440px;
   padding: 30px 28px;
+  /* Telas baixas (celular deitado): o modal rola por dentro, nunca corta. */
+  max-height: min(88dvh, 640px);
+  overflow-y: auto;
 }
 .ht-modal-fechar {
   position: absolute;
