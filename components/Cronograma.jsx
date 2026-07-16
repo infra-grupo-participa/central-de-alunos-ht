@@ -254,7 +254,11 @@ export default function Cronograma({ aulas }) {
                   </span>
                 </span>
                 <span className="ht-crono-info">
-                  <strong>{titulo}</strong>
+                  {/* Título no tease: dá pra ver que existem letras, não dá pra
+                      ler — o aluno fica curioso pelo que vem amanhã. */}
+                  <strong className="ht-tease" aria-hidden="true">
+                    {titulo}
+                  </strong>
                   <CountCard unlockAt={a.unlock_at} agora={agora} />
                   <small>Libera {rotuloDia(a.unlock_at)}</small>
                 </span>

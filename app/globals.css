@@ -942,6 +942,16 @@ h3 {
 .ht-crono-lock {
   cursor: not-allowed;
 }
+/* Tease de curiosidade: as letras aparecem, o significado não. O blur fica no
+   ponto exato entre "tem algo aí" e "não consigo ler" — e não é selecionável,
+   então não tem ctrl+c pra furar o truque. */
+.ht-tease {
+  filter: blur(4.5px);
+  opacity: 0.75;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
+}
 .ht-crono-lock .ht-crono-thumb img {
   filter: blur(7px) saturate(0.5) brightness(0.55);
   transform: scale(1.06); /* esconde a borda do blur */
@@ -1006,6 +1016,20 @@ h3 {
 .ht-seta:disabled {
   opacity: 0.35;
   cursor: default;
+}
+
+/* Prévia borrada do workbook no card da home. */
+.ht-workbook-tease {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ht-border);
+}
+.ht-workbook-tease .ht-tease {
+  font-size: 13.5px;
+  color: var(--ht-text-dim);
 }
 
 /* Sim/Não da ficha: dois botões grandes — impossível errar. */

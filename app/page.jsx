@@ -136,6 +136,16 @@ function HomeView() {
               </span>
             )}
           </div>
+
+          {/* Prévia no tease: o aluno vê que o workbook dele já está tomando
+              forma — mas só lê quando concluir. Curiosidade a favor da meta. */}
+          {!tudoConcluido && (
+            <div className="ht-workbook-tease" aria-hidden="true">
+              <span className="ht-tease">Radar: sua lista de 10 — nomes e problemas classificados</span>
+              <span className="ht-tease">Diagnóstico completo: perda pela inércia mapeada em R$</span>
+              <span className="ht-tease">Croqui estrutural + honorários com ancoragem de preço</span>
+            </div>
+          )}
         </section>
       </main>
 

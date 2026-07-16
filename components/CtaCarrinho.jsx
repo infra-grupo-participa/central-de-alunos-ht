@@ -26,6 +26,27 @@ export default function CtaCarrinho({ carrinho, fichaRespondida, tudoConcluido }
     return () => clearInterval(t);
   }, [visivel]);
 
+  // Antes da janela do CTA: seeding no tease. O aluno vê que existe um convite
+  // se formando — mas o conteúdo só se revela no momento certo. Curiosidade
+  // trabalhando a semana inteira a favor da conversão.
+  if (!visivel && carrinho?.abre_at) {
+    return (
+      <section className="ht-card" style={{ padding: '22px 24px' }}>
+        <span className="ht-tag">Em breve</span>
+        <h2 style={{ fontSize: 'clamp(18px, 4vw, 24px)', textTransform: 'uppercase', margin: '14px 0 8px' }}>
+          O próximo passo da sua jornada<span className="ht-accent">.</span>
+        </h2>
+        <p className="ht-tease" aria-hidden="true" style={{ margin: 0, fontSize: 14, lineHeight: 1.6, maxWidth: 560 }}>
+          O método completo do diagnóstico ao membership, com acompanhamento até o seu primeiro
+          contrato de R$ 35 mil — e uma condição exclusiva para quem executou o plano.
+        </p>
+        <p style={{ color: 'var(--ht-text-muted)', fontSize: 13, margin: '12px 0 0' }}>
+          Revelado ao final das aulas. Continue executando o plano.
+        </p>
+      </section>
+    );
+  }
+
   if (!visivel || agora === null) return null;
 
   const abreMs = new Date(carrinho.abre_at).getTime();
