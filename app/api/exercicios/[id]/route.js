@@ -31,6 +31,57 @@ async function minhaSubmissao(userId, exerciseId) {
   );
 }
 
+// Reaproveitamento entre exercícios: um repeater com `prefill_from` no jsonb
+// ({day_index, campo, map: {origem: destino}}) herda as linhas da submissão do
+// exercício de origem — ex.: as pessoas da Aula 1 já chegam carregadas na
+// classificação da Aula 2. Mescla por posição e NUNCA sobrescreve o que o
+// aluno já digitou no destino.
+async function aplicarPrefill(userId, exercicio, respostas) {
+  let out = respostas || {};
+  for (const campo of exercicio.campos || []) {
+    const src = campo?.prefill_from;
+    if (campo?.type !== 'repeater' || !src?.day_index || !src?.campo) continue;
+
+    const origem = unwrap(
+      await ht
+        .from('exercises')
+        .select('id')
+        .eq('cohort_id', exercicio.cohort_id)
+        .eq('day_index', src.day_index)
+        .eq('ativo', true)
+        .limit(1)
+        .maybeSingle()
+    );
+    if (!origem) continue;
+
+    const subOrigem = unwrap(
+      await ht
+        .from('exercise_submissions')
+        .select('respostas')
+        .eq('user_id', userId)
+        .eq('exercise_id', origem.id)
+        .maybeSingle()
+    );
+    const linhasOrigem = Array.isArray(subOrigem?.respostas?.[src.campo])
+      ? subOrigem.respostas[src.campo]
+      : [];
+    if (!linhasOrigem.length) continue;
+
+    const mapa = src.map || {};
+    const atuais = Array.isArray(out[campo.key]) ? [...out[campo.key]] : [];
+    linhasOrigem.forEach((linhaOrigem, i) => {
+      const alvo = { ...(atuais[i] || {}) };
+      for (const [de, para] of Object.entries(mapa)) {
+        const v = String(linhaOrigem?.[de] || '').trim();
+        if (v && !String(alvo[para] || '').trim()) alvo[para] = v;
+      }
+      atuais[i] = alvo;
+    });
+    out = { ...out, [campo.key]: atuais };
+  }
+  return out;
+}
+
 function montar(exercicio, aula, prog, sub) {
   return {
     id: exercicio.id,
@@ -92,7 +143,10 @@ export async function GET(request, { params }) {
         )
       : null;
     const sub = await minhaSubmissao(user.id, exercicio.id);
-    return Response.json(montar(exercicio, aula, prog, sub));
+    const payload = montar(exercicio, aula, prog, sub);
+    // Herda dados de exercícios anteriores (ex.: pessoas da Aula 1 → Aula 2).
+    payload.respostas = await aplicarPrefill(user.id, exercicio, payload.respostas);
+    return Response.json(payload);
   } catch (e) {
     console.error('[api/exercicios/[id] GET]', e);
     return Response.json({ error: 'erro_interno' }, { status: 500 });
