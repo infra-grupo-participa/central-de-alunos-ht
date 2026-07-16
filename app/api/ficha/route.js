@@ -10,7 +10,8 @@ const PONTOS_FICHA = 50;
 // Ficha de interesse do Holding Masters — formulário INTERNO da Central.
 // Estrutura básica (a copy final das perguntas vem depois); as respostas ficam
 // em jsonb, então trocar as perguntas não exige migração.
-// Liberação: a partir da Aula 2 (quando ela abre às 08h).
+// Liberação: a partir da Aula 4 (quando ela abre às 08h).
+const FICHA_LIBERA_NA_AULA = 4;
 
 async function fichaLiberada(profile) {
   const cohort = await resolveCohort(profile);
@@ -21,11 +22,11 @@ async function fichaLiberada(profile) {
       .select('unlock_at')
       .eq('cohort_id', cohort.id)
       .eq('ativo', true)
-      .eq('day_index', 2)
+      .eq('day_index', FICHA_LIBERA_NA_AULA)
       .limit(1)
   );
-  const aula2 = rows?.[0];
-  return aula2 ? aulaLiberada(aula2) : false;
+  const aula = rows?.[0];
+  return aula ? aulaLiberada(aula) : false;
 }
 
 export async function GET(request) {

@@ -150,7 +150,7 @@ function FichaView() {
         {estado === 'bloqueada' && (
           <div className="ht-card" style={{ padding: 26, textAlign: 'center' }}>
             <p style={{ color: 'var(--ht-text-dim)', margin: 0 }}>
-              A ficha abre junto com a <strong>Aula 2</strong>. Volte aqui depois dela.
+              A ficha abre junto com a <strong>Aula 4</strong>. Volte aqui depois dela.
             </p>
           </div>
         )}

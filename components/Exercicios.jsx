@@ -23,7 +23,8 @@ function rotuloLiberacao(unlockAt) {
   return `${dia}, às 08h`;
 }
 
-// Módulo da ficha de interesse HM — aparece como uma opção a partir da Aula 2.
+// Módulo da ficha de interesse HM — aparece como uma opção a partir da Aula 4.
+const FICHA_LIBERA_NA_AULA = 4;
 function FichaCard({ ficha }) {
   const respondida = ficha?.status === 'respondida';
   return (
@@ -102,7 +103,7 @@ export default function Exercicios({ exercicios, ficha, onAtualizado }) {
     setGate(e);
   }
 
-  const fichaLiberada = exercicios.some((e) => e.day_index === 2 && e.liberado);
+  const fichaLiberada = exercicios.some((e) => e.day_index === FICHA_LIBERA_NA_AULA && e.liberado);
 
   return (
     <section>
@@ -161,8 +162,8 @@ export default function Exercicios({ exercicios, ficha, onAtualizado }) {
                 </span>
               </div>
             )}
-            {/* A ficha HM entra como opção logo depois do exercício da Aula 2. */}
-            {e.day_index === 2 && fichaLiberada && <FichaCard ficha={ficha} />}
+            {/* A ficha HM entra como opção logo depois do exercício da Aula 4. */}
+            {e.day_index === FICHA_LIBERA_NA_AULA && fichaLiberada && <FichaCard ficha={ficha} />}
           </Fragment>
         ))}
       </div>
