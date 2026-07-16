@@ -1,11 +1,10 @@
 'use client';
 
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import WatchGate from '@/components/WatchGate.jsx';
 
 gsap.registerPlugin(ScrollTrigger);
 import {
@@ -64,10 +63,9 @@ function FichaCard({ ficha }) {
 // Exercícios das aulas, alinhados verticalmente abaixo do cronograma.
 // Bloqueado = conteúdo real, mas atrás de um blur: dá pra intuir o que vem,
 // sem conseguir ler — a linha tênue entre imaginar e saber.
-export default function Exercicios({ exercicios, ficha, onAtualizado }) {
+export default function Exercicios({ exercicios, ficha }) {
   const router = useRouter();
   const listaRef = useRef(null);
-  const [gate, setGate] = useState(null); // exercício aguardando confirmação de visto
 
   // Reveal suave dos módulos conforme entram na tela (respeita reduce-motion).
   useEffect(() => {
@@ -95,12 +93,10 @@ export default function Exercicios({ exercicios, ficha, onAtualizado }) {
 
   if (!exercicios || exercicios.length === 0) return null;
 
+  // A pergunta "você assistiu?" vive DENTRO da página do exercício e é feita
+  // em toda entrada (até por link direto) — aqui só navegamos.
   function abrir(e) {
-    if (e.watch_confirmado) {
-      router.push(`/exercicio/${e.id}`);
-      return;
-    }
-    setGate(e);
+    router.push(`/exercicio/${e.id}`);
   }
 
   const fichaLiberada = exercicios.some((e) => e.day_index === FICHA_LIBERA_NA_AULA && e.liberado);
@@ -168,17 +164,6 @@ export default function Exercicios({ exercicios, ficha, onAtualizado }) {
         ))}
       </div>
 
-      {gate && (
-        <WatchGate
-          exercicio={gate}
-          onClose={() => setGate(null)}
-          onLiberado={(e) => {
-            setGate(null);
-            onAtualizado?.();
-            router.push(`/exercicio/${e.id}`);
-          }}
-        />
-      )}
     </section>
   );
 }

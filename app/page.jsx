@@ -87,7 +87,7 @@ function HomeView() {
         />
 
         {/* Exercícios verticais com blur + ficha HM a partir da Aula 2 */}
-        <Exercicios exercicios={exercicios} ficha={me?.ficha} onAtualizado={carregar} />
+        <Exercicios exercicios={exercicios} ficha={me?.ficha} />
 
         {/* Workbook: o material completo, liberado ao concluir os exercícios */}
         <section className="ht-card" style={{ padding: '24px 26px' }}>

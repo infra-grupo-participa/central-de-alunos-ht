@@ -1,11 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Guard from '@/components/Guard.jsx';
 import Navbar from '@/components/Navbar.jsx';
 import ExercicioForm from '@/components/ExercicioForm.jsx';
+import WatchGate from '@/components/WatchGate.jsx';
 import WhatsAppFloat from '@/components/WhatsAppFloat.jsx';
 import { useMe } from '@/components/MeProvider.jsx';
 import { api } from '@/lib/supabase-browser.js';
@@ -14,6 +15,7 @@ import { IcoVoltar, IcoCheck, IcoConcluida, IcoErro, IcoYoutube } from '@/compon
 
 function ExercicioView() {
   const { id } = useParams();
+  const router = useRouter();
   const { me } = useMe();
   const [ex, setEx] = useState(null);
   const [respostas, setRespostas] = useState({});
@@ -21,6 +23,9 @@ function ExercicioView() {
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState(false);
   const [salvo, setSalvo] = useState(null); // 'salvando' | 'salvo'
+  // Gate do "você assistiu?": pergunta em TODA entrada num exercício não
+  // concluído — de propósito. Sem responder, o formulário não aparece.
+  const [gate, setGate] = useState(false);
 
   const respostasRef = useRef(respostas);
   useEffect(() => {
@@ -34,6 +39,9 @@ function ExercicioView() {
         if (!vivo) return;
         setEx(data);
         setRespostas(data.respostas || {});
+        // Sempre pergunta antes de trabalhar num exercício aberto; só a
+        // revisão de um exercício já concluído entra direto.
+        if (!data.concluido) setGate(true);
       })
       .catch((e) =>
         setErro(
@@ -193,6 +201,7 @@ function ExercicioView() {
               </p>
             )}
 
+            {!gate && (
             <div className="ht-card" style={{ padding: '24px' }}>
               <ExercicioForm campos={ex.campos} respostas={respostas} onChange={setRespostas} />
 
@@ -225,7 +234,18 @@ function ExercicioView() {
                 )}
               </div>
             </div>
+            )}
           </>
+        )}
+
+        {/* Pergunta obrigatória em toda entrada: assistiu ao vivo, replay ou
+            ainda não? Fechar sem responder volta para a Central. */}
+        {ex && gate && (
+          <WatchGate
+            exercicio={ex}
+            onClose={() => router.push('/')}
+            onLiberado={() => setGate(false)}
+          />
         )}
       </main>
       <WhatsAppFloat url={me?.carrinho?.whatsapp_url} />
