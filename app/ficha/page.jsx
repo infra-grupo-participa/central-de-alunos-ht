@@ -8,14 +8,15 @@ import Navbar from '@/components/Navbar.jsx';
 import WhatsAppFloat from '@/components/WhatsAppFloat.jsx';
 import { useMe } from '@/components/MeProvider.jsx';
 import { api } from '@/lib/supabase-browser.js';
+import { maskNome, maskTelefone, telefoneValido } from '@/lib/masks.js';
 import { IcoVoltar, IcoCheck, IcoConcluida, IcoErro } from '@/components/icons.jsx';
 
 // Ficha de interesse — Holding Masters (formulário interno, estrutura básica).
 // A copy final das perguntas será alinhada depois; as respostas vão em jsonb,
 // então trocar as perguntas aqui não exige migração no banco.
 const PERGUNTAS = [
-  { key: 'nome', type: 'text', label: 'Nome completo', placeholder: 'Seu nome' },
-  { key: 'whatsapp', type: 'text', label: 'WhatsApp (com DDD)', placeholder: '(11) 99999-9999' },
+  { key: 'nome', type: 'nome', label: 'Nome completo', placeholder: 'Seu nome' },
+  { key: 'whatsapp', type: 'tel', label: 'WhatsApp (com DDD)', placeholder: '(11) 99999-9999' },
   {
     key: 'atuacao',
     type: 'select',
@@ -72,15 +73,25 @@ function FichaView() {
       .catch(() => setEstado('aberta'));
   }, []);
 
-  function set(key, valor) {
-    setRespostas((r) => ({ ...r, [key]: valor }));
+  // Máscara por tipo: o dado entra limpo na digitação.
+  function set(key, valor, tipo) {
+    const v = tipo === 'nome' ? maskNome(valor) : tipo === 'tel' ? maskTelefone(valor) : valor;
+    setRespostas((r) => ({ ...r, [key]: v }));
   }
 
   async function enviar(e) {
     e.preventDefault();
     setErro(null);
-    if (!String(respostas.nome || '').trim() || !String(respostas.whatsapp || '').trim()) {
-      setErro('Preencha ao menos nome e WhatsApp.');
+    if (!String(respostas.nome || '').trim()) {
+      setErro('Preencha o seu nome completo.');
+      return;
+    }
+    if (!telefoneValido(respostas.whatsapp)) {
+      setErro('WhatsApp inválido — informe o DDD e o número completo.');
+      return;
+    }
+    if (!respostas.atuacao) {
+      setErro('Selecione a sua atuação.');
       return;
     }
     setBusy(true);
@@ -187,9 +198,11 @@ function FichaView() {
                     <input
                       className="ht-input"
                       type="text"
+                      inputMode={p.type === 'tel' ? 'tel' : undefined}
+                      maxLength={p.type === 'tel' ? 16 : undefined}
                       placeholder={p.placeholder || ''}
                       value={respostas[p.key] || ''}
-                      onChange={(e) => set(p.key, e.target.value)}
+                      onChange={(e) => set(p.key, e.target.value, p.type)}
                     />
                   )}
                 </label>

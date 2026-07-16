@@ -891,20 +891,26 @@ h3 {
   color: var(--ht-text-dim);
   background: rgba(10, 10, 11, 0.35);
 }
-.ht-crono-timer {
+/* Timer do card bloqueado: contagem viva até as 08h do dia da aula.
+   Visível e clara — mas é coadjuvante da thumb, não grito. */
+.ht-crono-count {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--ht-border);
-  background: var(--ht-surface);
-  color: var(--ht-text-dim);
-  font-size: 13px;
-}
-.ht-crono-timer strong {
+  gap: 6px;
+  margin: 3px 0 2px;
   color: var(--ht-orange);
+  font-family: var(--ht-font-display);
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 18px rgba(249, 115, 22, 0.35);
+}
+.ht-crono-count .ht-ico {
+  color: var(--ht-text-muted);
+}
+.ht-crono-count b {
+  font-weight: 800;
 }
 
 /* -------------------------------------------- Exercícios (módulos verticais) */
@@ -1046,11 +1052,44 @@ h3 {
   border: 1px solid var(--ht-border);
   margin-top: 22px;
 }
+/* Grid dos campos da linha: colunas explícitas por quantidade de campos —
+   todas as linhas ficam idênticas (harmonia), nada de última coluna órfã. */
 .ht-rep-fields {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 10px;
+  align-items: end;
+}
+.ht-rep-fields[data-cols='1'] {
+  grid-template-columns: 1fr;
+}
+.ht-rep-fields[data-cols='2'] {
+  grid-template-columns: 1.3fr 1fr;
+}
+.ht-rep-fields[data-cols='3'] {
+  grid-template-columns: 1.2fr 1fr 1fr;
+}
+.ht-rep-fields[data-cols='4'] {
+  grid-template-columns: repeat(2, 1fr); /* 2×2: quadrado, estável */
+}
+@media (max-width: 860px) {
+  .ht-rep-fields[data-cols='3'] {
+    grid-template-columns: 1fr 1fr;
+  }
+  /* Com 3 campos em 2 colunas, o último ocupa a linha inteira — sem órfão. */
+  .ht-rep-fields[data-cols='3'] .ht-rep-field:last-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 560px) {
+  .ht-rep-fields[data-cols='2'],
+  .ht-rep-fields[data-cols='3'],
+  .ht-rep-fields[data-cols='4'] {
+    grid-template-columns: 1fr;
+  }
+  .ht-rep-fields[data-cols='3'] .ht-rep-field:last-child {
+    grid-column: auto;
+  }
 }
 .ht-rep-field span {
   display: block;

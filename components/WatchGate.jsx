@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
 import { api } from '@/lib/supabase-browser.js';
 import { youtubeUrl } from '@/components/Cronograma.jsx';
 import { IcoLive, IcoAssistir, IcoUrgente, IcoYoutube, IcoErro } from '@/components/icons.jsx';
@@ -12,6 +13,20 @@ export default function WatchGate({ exercicio, onClose, onLiberado }) {
   const [passo, setPasso] = useState(1);
   const [busy, setBusy] = useState(false);
   const [erro, setErro] = useState(null);
+  const modalRef = useRef(null);
+
+  // Pop-in do modal (e um respiro a cada troca de passo).
+  useEffect(() => {
+    const el = modalRef.current;
+    if (!el) return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const tween = gsap.fromTo(
+      el,
+      { y: 22, opacity: 0, scale: 0.96 },
+      { y: 0, opacity: 1, scale: 1, duration: 0.32, ease: 'power3.out', clearProps: 'transform,opacity' }
+    );
+    return () => tween.kill();
+  }, [passo]);
 
   const aula = exercicio?.aula;
   if (!aula) return null;
@@ -33,7 +48,7 @@ export default function WatchGate({ exercicio, onClose, onLiberado }) {
 
   return (
     <div className="ht-modal-overlay" role="dialog" aria-modal="true" onClick={onClose}>
-      <div className="ht-modal ht-card" onClick={(e) => e.stopPropagation()}>
+      <div className="ht-modal ht-card" ref={modalRef} onClick={(e) => e.stopPropagation()}>
         {passo === 1 ? (
           <>
             <span className="ht-tag">Aula {exercicio.day_index}</span>

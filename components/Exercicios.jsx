@@ -1,9 +1,13 @@
 'use client';
 
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import WatchGate from '@/components/WatchGate.jsx';
+
+gsap.registerPlugin(ScrollTrigger);
 import {
   IcoConcluida,
   IcoExercicio,
@@ -61,7 +65,32 @@ function FichaCard({ ficha }) {
 // sem conseguir ler — a linha tênue entre imaginar e saber.
 export default function Exercicios({ exercicios, ficha, onAtualizado }) {
   const router = useRouter();
+  const listaRef = useRef(null);
   const [gate, setGate] = useState(null); // exercício aguardando confirmação de visto
+
+  // Reveal suave dos módulos conforme entram na tela (respeita reduce-motion).
+  useEffect(() => {
+    const el = listaRef.current;
+    if (!el || !exercicios?.length) return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const ctx = gsap.context(() => {
+      gsap.utils.toArray('.ht-ex-card').forEach((card) => {
+        gsap.fromTo(
+          card,
+          { y: 22, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.5,
+            ease: 'power3.out',
+            clearProps: 'transform,opacity',
+            scrollTrigger: { trigger: card, start: 'top 92%', once: true },
+          }
+        );
+      });
+    }, el);
+    return () => ctx.revert();
+  }, [exercicios]);
 
   if (!exercicios || exercicios.length === 0) return null;
 
@@ -88,7 +117,7 @@ export default function Exercicios({ exercicios, ficha, onAtualizado }) {
         </p>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div ref={listaRef} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {exercicios.map((e) => (
           <Fragment key={e.id}>
             {e.liberado ? (

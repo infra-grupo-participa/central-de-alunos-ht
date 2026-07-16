@@ -1,15 +1,35 @@
 'use client';
 
+import { aplicarMascara, propsDoTipo } from '@/lib/masks.js';
+
 // Renderizador genérico do formulário do exercício, guiado pelo `campos` jsonb
 // vindo do banco (ht.exercises.campos). Tipos suportados:
-//   text · textarea · select · checkbox · repeater (tabela de linhas)
+//   text · nome · tel · moeda · textarea · select · checkbox · repeater
 // Trocar as perguntas de um exercício é editar o jsonb — sem deploy.
+// tel/moeda/nome entram com máscara: o dado nasce limpo, sem depender de
+// higiene do usuário.
+
+const TIPOS_MASCARADOS = new Set(['tel', 'moeda', 'nome']);
+
+function InputMascarado({ tipo, valor, onChange, placeholder }) {
+  const extras = propsDoTipo(tipo);
+  return (
+    <input
+      className="ht-input"
+      type="text"
+      {...extras}
+      placeholder={placeholder || extras.placeholder || ''}
+      value={valor || ''}
+      onChange={(e) => onChange(aplicarMascara(tipo, e.target.value))}
+    />
+  );
+}
 
 function LinhaRepeater({ campo, linha, i, onChange }) {
   return (
     <div className="ht-rep-row">
       <span className="ht-rep-idx">{i + 1}</span>
-      <div className="ht-rep-fields">
+      <div className="ht-rep-fields" data-cols={Math.min(campo.fields?.length || 1, 4)}>
         {(campo.fields || []).map((f) => {
           const valor = linha?.[f.key] ?? '';
           if (f.type === 'select') {
@@ -28,6 +48,19 @@ function LinhaRepeater({ campo, linha, i, onChange }) {
                     </option>
                   ))}
                 </select>
+              </label>
+            );
+          }
+          if (TIPOS_MASCARADOS.has(f.type)) {
+            return (
+              <label key={f.key} className="ht-rep-field">
+                <span>{f.label}</span>
+                <InputMascarado
+                  tipo={f.type}
+                  valor={valor}
+                  placeholder={f.placeholder}
+                  onChange={(v) => onChange(i, f.key, v)}
+                />
               </label>
             );
           }
@@ -143,6 +176,23 @@ export default function ExercicioForm({ campos, respostas, onChange, disabled = 
                 onChange={(e) => set(campo.key, e.target.checked)}
               />
               <span>{campo.label}</span>
+            </label>
+          );
+        }
+
+        if (TIPOS_MASCARADOS.has(campo.type)) {
+          return (
+            <label key={campo.key} style={{ display: 'block' }}>
+              <strong style={{ display: 'block', fontSize: 15, marginBottom: 6 }}>{campo.label}</strong>
+              {campo.help && (
+                <p style={{ color: 'var(--ht-text-muted)', fontSize: 13, margin: '0 0 8px' }}>{campo.help}</p>
+              )}
+              <InputMascarado
+                tipo={campo.type}
+                valor={valor}
+                placeholder={campo.placeholder}
+                onChange={(v) => set(campo.key, v)}
+              />
             </label>
           );
         }
