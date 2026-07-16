@@ -1,9 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { pad2, splitCountdown } from '@/lib/format.js';
-import { IcoBloqueada, IcoConcluida, IcoRelogio, IcoYoutube } from '@/components/icons.jsx';
+import {
+  IcoBloqueada,
+  IcoConcluida,
+  IcoRelogio,
+  IcoYoutube,
+  IcoEsq,
+  IcoDir,
+} from '@/components/icons.jsx';
 
 // Thumbnail oficial do YouTube — o vídeo não é mais embedado: o card leva
 // direto pro YouTube, e a thumb mantém a página visualmente rica.
@@ -31,7 +38,7 @@ function CountCard({ unlockAt, agora }) {
   const { dias, horas, minutos, segundos } = splitCountdown(ms);
   return (
     <span className="ht-crono-count" aria-label="Tempo até a liberação da aula">
-      <IcoRelogio size={13} />
+      <IcoRelogio size={14} />
       <b>
         {dias > 0 ? `${dias}d ` : ''}
         {pad2(horas)}:{pad2(minutos)}:{pad2(segundos)}
@@ -40,15 +47,29 @@ function CountCard({ unlockAt, agora }) {
   );
 }
 
-// Cronograma de aulas: só as thumbnails, alinhadas horizontalmente.
-// Liberada → abre no YouTube. Bloqueada → thumb borrada + cadeado + timer do
-// dia (as aulas abrem às 08h). O trilho desliza sozinho, de leve, para mostrar
-// que existe conteúdo além da dobra — e pausa assim que o aluno interage.
+// A lógica do produto vira estado visual óbvio (o aluno leigo entende sem
+// aprender nada): Concluída (verde) · AULA DE HOJE (laranja, destaque) ·
+// Assistida/liberada (neutra com play) · Bloqueada (blur + cadeado + timer).
+function estadoDaAula(a, idHoje) {
+  if (!a.liberada) return 'bloqueada';
+  if (a.concluida) return 'concluida';
+  if (a.id === idHoje) return 'hoje';
+  return 'liberada';
+}
+
 export default function Cronograma({ aulas }) {
   const trilhoRef = useRef(null);
   const [agora, setAgora] = useState(null);
+  const [podeEsq, setPodeEsq] = useState(false);
+  const [podeDir, setPodeDir] = useState(false);
 
   const temBloqueada = useMemo(() => (aulas || []).some((a) => !a.liberada && a.unlock_at), [aulas]);
+
+  // "Aula de hoje" = a última liberada ainda sem exercício concluído.
+  const idHoje = useMemo(() => {
+    const liberadas = (aulas || []).filter((a) => a.liberada && !a.concluida);
+    return liberadas.length ? liberadas[liberadas.length - 1].id : null;
+  }, [aulas]);
 
   // Um relógio só para todos os cards.
   useEffect(() => {
@@ -58,6 +79,38 @@ export default function Cronograma({ aulas }) {
     return () => clearInterval(t);
   }, [temBloqueada]);
 
+  // Habilita/desabilita as setas conforme a posição do trilho.
+  const atualizarSetas = useCallback(() => {
+    const el = trilhoRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setPodeEsq(el.scrollLeft > 4);
+    setPodeDir(el.scrollLeft < max - 4);
+  }, []);
+
+  useEffect(() => {
+    const el = trilhoRef.current;
+    if (!el) return undefined;
+    atualizarSetas();
+    el.addEventListener('scroll', atualizarSetas, { passive: true });
+    window.addEventListener('resize', atualizarSetas);
+    return () => {
+      el.removeEventListener('scroll', atualizarSetas);
+      window.removeEventListener('resize', atualizarSetas);
+    };
+  }, [aulas, atualizarSetas]);
+
+  // Setas: deslizam um card por clique, com easing do GSAP.
+  const irPara = useCallback((direcao) => {
+    const el = trilhoRef.current;
+    if (!el) return;
+    const card = el.querySelector('.ht-crono-card');
+    const passo = card ? card.getBoundingClientRect().width + 16 : 340;
+    const max = el.scrollWidth - el.clientWidth;
+    const destino = Math.max(0, Math.min(max, el.scrollLeft + direcao * passo));
+    gsap.to(el, { scrollLeft: destino, duration: 0.55, ease: 'power2.out', overwrite: 'auto' });
+  }, []);
+
   // Entrada dos cards (stagger) — respeita reduce-motion.
   useEffect(() => {
     const el = trilhoRef.current;
@@ -66,39 +119,47 @@ export default function Cronograma({ aulas }) {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         '.ht-crono-card',
-        { y: 18, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.55, ease: 'power3.out', stagger: 0.07, clearProps: 'transform,opacity' }
+        { y: 22, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.55, ease: 'power3.out', stagger: 0.08, clearProps: 'transform,opacity' }
       );
     }, el);
     return () => ctx.revert();
   }, [aulas]);
 
-  // Deslize horizontal autônomo, leve e sutil (vai e volta), com pausa na
-  // interação e retomada depois de um respiro.
+  // Deslize autônomo: as aulas passam de forma sutil para a DIREITA e, ao
+  // chegar no fim, o trilho volta suave para o começo e recomeça. Pausa em
+  // qualquer interação e retoma depois de um respiro.
   useEffect(() => {
     const el = trilhoRef.current;
     if (!el || !aulas?.length) return undefined;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
 
-    const VEL = 18; // px/s — passeio, não corrida
-    const PAUSA_BORDA = 1600; // respiro ao chegar na ponta
-    const RETOMA_MS = 4500; // volta a deslizar depois da interação
-    let dir = 1;
-    let pausadoAte = performance.now() + 1400; // espera a entrada dos cards
+    const VEL = 16; // px/s — passeio, não corrida
+    const RETOMA_MS = 4500;
+    let pausadoAte = performance.now() + 1600; // espera a entrada dos cards
     let interagindo = false;
+    let voltando = false;
     let idleTimer = null;
 
     const tick = (_t, deltaMS) => {
-      if (interagindo || performance.now() < pausadoAte) return;
+      if (interagindo || voltando || performance.now() < pausadoAte) return;
       const max = el.scrollWidth - el.clientWidth;
       if (max <= 8) return;
-      el.scrollLeft += dir * VEL * (deltaMS / 1000);
+      el.scrollLeft += VEL * (deltaMS / 1000);
       if (el.scrollLeft >= max - 1) {
-        dir = -1;
-        pausadoAte = performance.now() + PAUSA_BORDA;
-      } else if (el.scrollLeft <= 1) {
-        dir = 1;
-        pausadoAte = performance.now() + PAUSA_BORDA;
+        // Chegou no fim: respira e volta suave pro começo.
+        voltando = true;
+        gsap.to(el, {
+          scrollLeft: 0,
+          duration: 1.4,
+          ease: 'power2.inOut',
+          delay: 1.6,
+          overwrite: 'auto',
+          onComplete: () => {
+            voltando = false;
+            pausadoAte = performance.now() + 1400;
+          },
+        });
       }
     };
 
@@ -130,6 +191,7 @@ export default function Cronograma({ aulas }) {
 
     return () => {
       gsap.ticker.remove(tick);
+      gsap.killTweensOf(el);
       clearTimeout(idleTimer);
       el.removeEventListener('pointerenter', entrar);
       el.removeEventListener('pointerleave', sair);
@@ -143,20 +205,69 @@ export default function Cronograma({ aulas }) {
 
   return (
     <section>
-      <h1 style={{ fontSize: 'clamp(24px, 5vw, 34px)', textTransform: 'uppercase', marginBottom: 10 }}>
-        Cronograma de aulas<span className="ht-accent">.</span>
-      </h1>
-      <p style={{ color: 'var(--ht-text-dim)', fontSize: 14, margin: '0 0 16px', maxWidth: 640 }}>
-        Uma aula por dia, liberada às <strong style={{ color: 'var(--ht-orange)' }}>08h</strong>. Clique na
-        aula para assistir no YouTube — e volte aqui para executar o exercício do dia.
-      </p>
+      <div className="ht-crono-head">
+        <div>
+          <h1 style={{ fontSize: 'clamp(26px, 5.5vw, 38px)', textTransform: 'uppercase' }}>
+            Cronograma de aulas<span className="ht-accent">.</span>
+          </h1>
+          <p style={{ color: 'var(--ht-text-dim)', fontSize: 14, margin: '10px 0 0', maxWidth: 620 }}>
+            Uma aula por dia, liberada às <strong style={{ color: 'var(--ht-orange)' }}>08h</strong>.
+            Clique na aula para assistir no YouTube — e volte aqui para fazer o exercício do dia.
+          </p>
+        </div>
+        <div className="ht-crono-setas">
+          <button
+            type="button"
+            className="ht-seta"
+            onClick={() => irPara(-1)}
+            disabled={!podeEsq}
+            aria-label="Aulas anteriores"
+          >
+            <IcoEsq size={20} />
+          </button>
+          <button
+            type="button"
+            className="ht-seta"
+            onClick={() => irPara(1)}
+            disabled={!podeDir}
+            aria-label="Próximas aulas"
+          >
+            <IcoDir size={20} />
+          </button>
+        </div>
+      </div>
 
       <div className="ht-crono" ref={trilhoRef}>
-        {aulas.map((a) =>
-          a.liberada ? (
+        {aulas.map((a) => {
+          const estado = estadoDaAula(a, idHoje);
+          const titulo = a.titulo.replace(/^Aula \d+\s*[-—]\s*/, '');
+
+          if (estado === 'bloqueada') {
+            return (
+              <div key={a.id} className="ht-crono-card ht-crono-lock" aria-disabled="true">
+                <span className="ht-crono-thumb">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={youtubeThumb(a.video_id)} alt="" loading="lazy" />
+                  <span className="ht-crono-chip ht-chip-dia">Aula {a.day_index}</span>
+                  <span className="ht-crono-play ht-crono-cadeado">
+                    <IcoBloqueada size={26} />
+                  </span>
+                </span>
+                <span className="ht-crono-info">
+                  <strong>{titulo}</strong>
+                  <CountCard unlockAt={a.unlock_at} agora={agora} />
+                  <small>Libera {rotuloDia(a.unlock_at)}</small>
+                </span>
+              </div>
+            );
+          }
+
+          const ehHoje = estado === 'hoje';
+          const concluida = estado === 'concluida';
+          return (
             <a
               key={a.id}
-              className="ht-crono-card"
+              className={`ht-crono-card ${ehHoje ? 'ht-crono-hoje' : ''} ${concluida ? 'ht-crono-feita' : ''}`}
               href={youtubeUrl(a.video_id)}
               target="_blank"
               rel="noreferrer"
@@ -165,37 +276,35 @@ export default function Cronograma({ aulas }) {
               <span className="ht-crono-thumb">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={youtubeThumb(a.video_id)} alt={a.titulo} loading="lazy" />
-                <span className="ht-crono-play">
-                  <IcoYoutube size={26} />
+                <span className={`ht-crono-chip ${ehHoje ? 'ht-chip-hoje' : 'ht-chip-dia'}`}>
+                  {ehHoje ? 'Aula de hoje' : `Aula ${a.day_index}`}
                 </span>
-                {a.concluida && (
+                <span className="ht-crono-play">
+                  <IcoYoutube size={34} />
+                </span>
+                {concluida && (
                   <span className="ht-crono-ok" title="Exercício concluído">
-                    <IcoConcluida size={15} />
+                    <IcoConcluida size={16} />
                   </span>
                 )}
               </span>
               <span className="ht-crono-info">
-                <strong>Aula {a.day_index}</strong>
-                <small>{a.titulo.replace(/^Aula \d+\s*[-—]\s*/, '')}</small>
+                <strong>{titulo}</strong>
+                {concluida ? (
+                  <small className="ht-crono-status ht-status-ok">
+                    <IcoConcluida size={13} />
+                    Aula e exercício concluídos
+                  </small>
+                ) : (
+                  <small className={`ht-crono-status ${ehHoje ? 'ht-status-hoje' : ''}`}>
+                    <IcoYoutube size={13} />
+                    {ehHoje ? 'Assista agora no YouTube' : 'Assistir no YouTube'}
+                  </small>
+                )}
               </span>
             </a>
-          ) : (
-            <div key={a.id} className="ht-crono-card ht-crono-lock" aria-disabled="true">
-              <span className="ht-crono-thumb">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={youtubeThumb(a.video_id)} alt="" loading="lazy" />
-                <span className="ht-crono-play ht-crono-cadeado">
-                  <IcoBloqueada size={22} />
-                </span>
-              </span>
-              <span className="ht-crono-info">
-                <strong>Aula {a.day_index}</strong>
-                <CountCard unlockAt={a.unlock_at} agora={agora} />
-                <small>Libera {rotuloDia(a.unlock_at)}</small>
-              </span>
-            </div>
-          )
-        )}
+          );
+        })}
       </div>
     </section>
   );

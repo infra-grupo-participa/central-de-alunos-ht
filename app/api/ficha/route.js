@@ -80,6 +80,15 @@ export async function POST(request) {
         .single()
     );
 
+    // Enriquecimento: nome/telefone informados na ficha alimentam o profile
+    // (sem sobrescrever com vazio).
+    const patchPerfil = {};
+    if (String(respostas?.nome || '').trim()) patchPerfil.nome = String(respostas.nome).trim().slice(0, 80);
+    if (String(respostas?.telefone || '').trim()) patchPerfil.telefone = String(respostas.telefone).trim().slice(0, 20);
+    if (Object.keys(patchPerfil).length) {
+      unwrap(await ht.from('profiles').update(patchPerfil).eq('id', user.id).select('id').maybeSingle());
+    }
+
     // Credita os pontos da ficha uma única vez.
     let pontos = 0;
     if (!jaRespondida) {

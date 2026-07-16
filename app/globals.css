@@ -10,11 +10,12 @@
   --ht-surface-2: #262220;
   --ht-border: #302a26;
 
-  /* Laranja da marca */
-  --ht-orange: #f97316;
-  --ht-orange-bright: #ff8a1e;
-  --ht-orange-deep: #ea580c;
-  --ht-orange-glow: rgba(249, 115, 22, 0.35);
+  /* Laranja da marca — #FF6B1A é o laranja vivo do logo oficial HT
+     (design system da LP de captação: laranja vivo · preto profundo · off-white) */
+  --ht-orange: #ff6b1a;
+  --ht-orange-bright: #ff8a3d;
+  --ht-orange-deep: #e85a0c;
+  --ht-orange-glow: rgba(255, 107, 26, 0.35);
 
   /* Texto */
   --ht-text: #ffffff;
@@ -115,8 +116,16 @@ h3 {
   color: #fff;
   box-shadow: 0 8px 24px var(--ht-orange-glow);
 }
+/* Micro-elevação no hover — identidade oficial dos CTAs HT */
 .ht-btn-primary:hover {
   filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px var(--ht-orange-glow);
+}
+/* Foco visível em tudo que interage (aluno navegando por teclado também) */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--ht-orange);
+  outline-offset: 2px;
 }
 .ht-btn-ghost {
   background: var(--ht-surface);
@@ -806,7 +815,7 @@ h3 {
   border-radius: 999px;
 }
 .ht-crono-card {
-  flex: 0 0 232px;
+  flex: 0 0 min(324px, 84vw);
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
@@ -816,11 +825,21 @@ h3 {
   border: 1px solid var(--ht-border);
   border-radius: var(--ht-radius);
   overflow: hidden;
-  transition: border-color 0.15s ease, transform 0.12s ease;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 .ht-crono-card:not(.ht-crono-lock):hover {
   border-color: var(--ht-orange);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+}
+/* AULA DE HOJE: o destaque da página — é aqui que o aluno tem que clicar. */
+.ht-crono-hoje {
+  border-color: var(--ht-orange);
+  box-shadow: 0 0 0 1px var(--ht-orange), 0 10px 36px var(--ht-orange-glow);
+}
+/* Concluída: confirmação verde, sem competir com a aula de hoje. */
+.ht-crono-feita {
+  border-color: rgba(34, 197, 94, 0.4);
 }
 .ht-crono-thumb {
   position: relative;
@@ -863,21 +882,61 @@ h3 {
 .ht-crono-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 10px 12px 12px;
+  gap: 4px;
+  padding: 13px 15px 15px;
 }
 .ht-crono-info strong {
   font-family: var(--ht-font-display);
-  font-size: 14px;
-  letter-spacing: 0.02em;
+  font-size: 16px;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
+  line-height: 1.15;
 }
 .ht-crono-info small {
   color: var(--ht-text-muted);
-  font-size: 12px;
+  font-size: 12.5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* Linha de status do card: o que fazer, dito com todas as letras. */
+.ht-crono-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.ht-status-ok {
+  color: var(--ht-success) !important;
+}
+.ht-status-hoje {
+  color: var(--ht-orange) !important;
+}
+/* Chip sobre a thumb: qual aula é (e se é a de hoje). */
+.ht-crono-chip {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-family: var(--ht-font-display);
+  font-weight: 800;
+  font-size: 11.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.ht-chip-dia {
+  background: rgba(10, 10, 11, 0.72);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(4px);
+}
+.ht-chip-hoje {
+  background: linear-gradient(90deg, var(--ht-orange-deep), var(--ht-orange-bright));
+  color: #fff;
+  box-shadow: 0 4px 16px var(--ht-orange-glow);
+  animation: ht-pulse 1.8s ease-in-out infinite;
 }
 /* Aula bloqueada: a thumb existe, mas atrás do vidro — libera às 08h do dia. */
 .ht-crono-lock {
@@ -896,21 +955,132 @@ h3 {
 .ht-crono-count {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin: 3px 0 2px;
+  gap: 7px;
+  margin: 4px 0 2px;
   color: var(--ht-orange);
   font-family: var(--ht-font-display);
   font-weight: 800;
-  font-size: 16px;
+  font-size: 18px;
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 18px rgba(249, 115, 22, 0.35);
+  text-shadow: 0 0 20px var(--ht-orange-glow);
 }
 .ht-crono-count .ht-ico {
   color: var(--ht-text-muted);
 }
 .ht-crono-count b {
   font-weight: 800;
+}
+
+/* Cabeçalho do cronograma: título à esquerda, setas à direita. */
+.ht-crono-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.ht-crono-setas {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.ht-seta {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--ht-surface);
+  border: 1px solid var(--ht-border);
+  color: var(--ht-text);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, transform 0.12s ease, opacity 0.15s ease;
+}
+.ht-seta:hover:not(:disabled) {
+  border-color: var(--ht-orange);
+  color: var(--ht-orange);
+  transform: translateY(-1px);
+}
+.ht-seta:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Passo a passo do topo — a Central explicada em 3 movimentos. */
+.ht-passos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.ht-passo {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 14px 16px;
+  border-radius: var(--ht-radius);
+  border: 1px solid var(--ht-border);
+  background: var(--ht-surface);
+}
+.ht-passo-n {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-family: var(--ht-font-display);
+  font-weight: 900;
+  font-size: 16px;
+  color: #fff;
+  background: linear-gradient(180deg, var(--ht-orange-bright), var(--ht-orange-deep));
+  box-shadow: 0 4px 14px var(--ht-orange-glow);
+}
+.ht-passo strong {
+  display: block;
+  font-size: 13.5px;
+}
+.ht-passo small {
+  color: var(--ht-text-muted);
+  font-size: 12px;
+  line-height: 1.35;
+  display: block;
+  margin-top: 2px;
+}
+@media (max-width: 760px) {
+  .ht-passos {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sim/Não da ficha: dois botões grandes — impossível errar. */
+.ht-simnao {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  max-width: 320px;
+}
+.ht-simnao-btn {
+  padding: 12px 10px;
+  border-radius: var(--ht-radius-sm);
+  border: 1px solid var(--ht-border);
+  background: var(--ht-bg-2);
+  color: var(--ht-text-dim);
+  font-family: var(--ht-font-body);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.ht-simnao-btn:hover {
+  border-color: var(--ht-orange);
+  color: var(--ht-text);
+}
+.ht-simnao-on {
+  background: linear-gradient(180deg, var(--ht-orange-bright), var(--ht-orange-deep));
+  border-color: var(--ht-orange);
+  color: #fff;
 }
 
 /* -------------------------------------------- Exercícios (módulos verticais) */

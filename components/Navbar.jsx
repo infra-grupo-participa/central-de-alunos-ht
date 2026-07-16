@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Logo from '@/components/Logo.jsx';
 import { useAuth } from '@/components/AuthProvider.jsx';
 import { useMe } from '@/components/MeProvider.jsx';
-import { IcoSair, IcoMetricas } from '@/components/icons.jsx';
+import { IcoSair, IcoMetricas, IcoPerfil } from '@/components/icons.jsx';
 
 // Navbar enxuta: a Central agora é uma página só (cronograma + exercícios),
 // então sobram a marca e a saída. A única aba é a de Métricas — e só pra quem
@@ -28,6 +28,10 @@ export default function Navbar() {
       </Link>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Link href="/perfil" className="ht-btn ht-btn-ghost ht-nav-sair" style={{ textDecoration: 'none' }}>
+          <IcoPerfil size={16} />
+          <span className="ht-nav-sair-label">Meus dados</span>
+        </Link>
         {me?.is_admin && (
           <Link href="/admin" className="ht-btn ht-btn-ghost ht-nav-sair" style={{ textDecoration: 'none' }}>
             <IcoMetricas size={16} />
