@@ -67,31 +67,6 @@ function HomeView() {
             : ` Você executou ${feitos} de ${total || 6} exercícios do plano.`}
         </p>
 
-        {/* Como funciona — 3 passos, para quem chega sem entender nada */}
-        <section className="ht-passos" aria-label="Como funciona a Central">
-          <div className="ht-passo">
-            <span className="ht-passo-n">1</span>
-            <div>
-              <strong>Assista a aula do dia</strong>
-              <small>Clique no card da aula — o vídeo abre no YouTube.</small>
-            </div>
-          </div>
-          <div className="ht-passo">
-            <span className="ht-passo-n">2</span>
-            <div>
-              <strong>Faça o exercício</strong>
-              <small>Volte aqui e execute o passo do seu plano.</small>
-            </div>
-          </div>
-          <div className="ht-passo">
-            <span className="ht-passo-n">3</span>
-            <div>
-              <strong>Baixe o workbook</strong>
-              <small>Complete os 6 exercícios e leve tudo em PDF.</small>
-            </div>
-          </div>
-        </section>
-
         {/* Avisos ativos */}
         {avisos.length > 0 && (
           <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

@@ -1008,52 +1008,6 @@ h3 {
   cursor: default;
 }
 
-/* Passo a passo do topo — a Central explicada em 3 movimentos. */
-.ht-passos {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-.ht-passo {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  padding: 14px 16px;
-  border-radius: var(--ht-radius);
-  border: 1px solid var(--ht-border);
-  background: var(--ht-surface);
-}
-.ht-passo-n {
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  font-family: var(--ht-font-display);
-  font-weight: 900;
-  font-size: 16px;
-  color: #fff;
-  background: linear-gradient(180deg, var(--ht-orange-bright), var(--ht-orange-deep));
-  box-shadow: 0 4px 14px var(--ht-orange-glow);
-}
-.ht-passo strong {
-  display: block;
-  font-size: 13.5px;
-}
-.ht-passo small {
-  color: var(--ht-text-muted);
-  font-size: 12px;
-  line-height: 1.35;
-  display: block;
-  margin-top: 2px;
-}
-@media (max-width: 760px) {
-  .ht-passos {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* Sim/Não da ficha: dois botões grandes — impossível errar. */
 .ht-simnao {
   display: grid;
