@@ -5,9 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider.jsx';
 import Logo from '@/components/Logo.jsx';
-import { IcoEmail, IcoSenha, IcoAvancar, IcoErro } from '@/components/icons.jsx';
+import { IcoEmail, IcoSenha, IcoAvancar, IcoErro, IcoWhats } from '@/components/icons.jsx';
 
-// Tela de login — email + senha, na cara da marca HT.
+// WhatsApp da Secretaria (o mesmo default do servidor; trocavel por env).
+const WHATSAPP_SECRETARIA =
+  process.env.NEXT_PUBLIC_WHATSAPP_URL || 'https://wa.me/5511999999999';
+
+// Tela de login — simples e direta: o email da compra do ingresso é a chave.
 export default function LoginPage() {
   const { session, loading, signIn } = useAuth();
   const router = useRouter();
@@ -32,7 +36,7 @@ export default function LoginPage() {
     try {
       const { error } = await signIn(email.trim(), senha);
       if (error) {
-        setErro('E-mail ou senha incorretos. Confira e tente de novo — sua vaga te espera.');
+        setErro('E-mail ou senha incorretos. Use o mesmo e-mail da compra do ingresso.');
         return;
       }
       router.replace('/');
@@ -60,21 +64,19 @@ export default function LoginPage() {
         <strong style={{ letterSpacing: '0.12em', fontSize: 15 }}>HOLDING TOTAL</strong>
       </div>
 
-      <div className="ht-card" style={{ width: '100%', maxWidth: 420, padding: '34px 30px' }}>
-        <span className="ht-tag">Central do Aluno</span>
+      <div className="ht-card" style={{ width: '100%', maxWidth: 440, padding: '34px 30px' }}>
         <h1
           style={{
-            fontSize: 'clamp(30px, 6vw, 40px)',
+            fontSize: 'clamp(24px, 5vw, 32px)',
             textTransform: 'uppercase',
-            marginTop: 18,
+            lineHeight: 1.05,
           }}
         >
-          Sua central
-          <br />
-          te <span className="ht-accent">espera</span>.
+          Acesse a central de alunos do{' '}
+          <span className="ht-accent">Holding Total</span>
         </h1>
         <p style={{ color: 'var(--ht-text-dim)', fontSize: 15, lineHeight: 1.5, marginTop: 12 }}>
-          Entre agora. Cada dia conta — quem fica de fora, fica para trás.
+          Use o mesmo email da compra do ingresso para acessar
         </p>
 
         <form onSubmit={onSubmit} style={{ marginTop: 10 }}>
@@ -89,7 +91,7 @@ export default function LoginPage() {
               className="ht-input"
               type="email"
               autoComplete="email"
-              placeholder="seu@email.com"
+              placeholder="O e-mail usado na compra"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -145,8 +147,25 @@ export default function LoginPage() {
         </form>
       </div>
 
-      <p style={{ color: 'var(--ht-text-muted)', fontSize: 13, marginTop: 22, textAlign: 'center' }}>
-        Recebeu a senha por e-mail após a compra? É ela que abre essa porta.
+      {/* Dobra abaixo: canal direto com a Secretaria */}
+      <p style={{ color: 'var(--ht-text-muted)', fontSize: 14, marginTop: 24, textAlign: 'center' }}>
+        Dúvidas?{' '}
+        <a
+          href={WHATSAPP_SECRETARIA}
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            color: 'var(--ht-orange)',
+            fontWeight: 700,
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 5,
+          }}
+        >
+          <IcoWhats size={15} />
+          Fale com a Secretaria
+        </a>
       </p>
     </div>
   );

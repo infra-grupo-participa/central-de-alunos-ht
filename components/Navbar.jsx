@@ -1,34 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Logo from '@/components/Logo.jsx';
 import { useAuth } from '@/components/AuthProvider.jsx';
 import { useMe } from '@/components/MeProvider.jsx';
-import { IcoHome, IcoAulas, IcoRanking, IcoSair, IcoMetricas } from '@/components/icons.jsx';
+import { IcoSair, IcoMetricas } from '@/components/icons.jsx';
 
-const TABS = [
-  { href: '/', label: 'Home', Ico: IcoHome },
-  { href: '/aulas', label: 'Aulas', Ico: IcoAulas },
-  { href: '/ranking', label: 'Ranking', Ico: IcoRanking },
-];
-
-// So aparece pra quem e admin (o /api/me diz). Aluno nem ve a aba.
-const TAB_ADMIN = { href: '/admin', label: 'Métricas', Ico: IcoMetricas };
-
-function ativo(href, pathname) {
-  if (href === '/') return pathname === '/';
-  if (href === '/aulas') return pathname === '/aulas' || pathname.startsWith('/aula/');
-  return pathname.startsWith(href);
-}
-
+// Navbar enxuta: a Central agora é uma página só (cronograma + exercícios),
+// então sobram a marca e a saída. A única aba é a de Métricas — e só pra quem
+// é admin (o /api/me diz; quem protege os dados é o requireAdmin da API).
 export default function Navbar() {
-  const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
   const { me } = useMe();
-
-  const tabs = me?.is_admin ? [...TABS, TAB_ADMIN] : TABS;
 
   async function sair() {
     await signOut();
@@ -42,24 +27,18 @@ export default function Navbar() {
         <strong>HOLDING TOTAL</strong>
       </Link>
 
-      <nav className="ht-nav-tabs">
-        {tabs.map(({ href, label, Ico }) => (
-          <Link
-            key={href}
-            href={href}
-            aria-label={label}
-            className={`ht-nav-tab ${ativo(href, pathname) ? 'ht-nav-tab-on' : ''}`}
-          >
-            <Ico size={17} />
-            <span className="ht-nav-tab-label">{label}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {me?.is_admin && (
+          <Link href="/admin" className="ht-btn ht-btn-ghost ht-nav-sair" style={{ textDecoration: 'none' }}>
+            <IcoMetricas size={16} />
+            <span className="ht-nav-sair-label">Métricas</span>
           </Link>
-        ))}
-      </nav>
-
-      <button className="ht-btn ht-btn-ghost ht-nav-sair" onClick={sair} aria-label="Sair">
-        <IcoSair size={16} />
-        <span className="ht-nav-sair-label">Sair</span>
-      </button>
+        )}
+        <button className="ht-btn ht-btn-ghost ht-nav-sair" onClick={sair} aria-label="Sair">
+          <IcoSair size={16} />
+          <span className="ht-nav-sair-label">Sair</span>
+        </button>
+      </div>
     </header>
   );
 }

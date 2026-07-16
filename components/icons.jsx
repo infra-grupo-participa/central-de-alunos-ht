@@ -13,6 +13,11 @@ import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right.mjs';
 import CalendarClock from 'lucide-react/dist/esm/icons/calendar-clock.mjs';
 import ChartColumn from 'lucide-react/dist/esm/icons/chart-column.mjs';
 import Check from 'lucide-react/dist/esm/icons/check.mjs';
+import Download from 'lucide-react/dist/esm/icons/download.mjs';
+import ExternalLink from 'lucide-react/dist/esm/icons/external-link.mjs';
+import MessageCircle from 'lucide-react/dist/esm/icons/message-circle.mjs';
+import PencilLine from 'lucide-react/dist/esm/icons/pencil-line.mjs';
+import Printer from 'lucide-react/dist/esm/icons/printer.mjs';
 import CircleAlert from 'lucide-react/dist/esm/icons/circle-alert.mjs';
 import CircleCheck from 'lucide-react/dist/esm/icons/circle-check.mjs';
 import CirclePlay from 'lucide-react/dist/esm/icons/circle-play.mjs';
@@ -96,3 +101,13 @@ export const IcoSenha = icone(Lock);
 export const IcoMetricas = icone(ChartColumn);
 export const IcoBusca = icone(Search);
 export const IcoOlho = icone(Eye);
+
+// Cronograma, exercicios e suporte
+// (a versao instalada da Lucide nao tem o glifo do YouTube; o play circulado
+// cumpre o papel de "assistir" sobre a thumb)
+export const IcoYoutube = icone(CirclePlay);
+export const IcoExercicio = icone(PencilLine);
+export const IcoExterno = icone(ExternalLink);
+export const IcoBaixar = icone(Download);
+export const IcoImprimir = icone(Printer);
+export const IcoWhats = icone(MessageCircle);

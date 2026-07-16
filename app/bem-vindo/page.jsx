@@ -61,8 +61,8 @@ export default function BemVindoPage() {
             maxWidth: 540,
           }}
         >
-          Aulas liberadas dia a dia, deveres, ranking ao vivo e tudo que você
-          precisa para não ficar para trás nesta semana. Prepare-se.
+          Aulas liberadas dia a dia às 08h, exercícios do plano do primeiro
+          contrato e o workbook completo no final. Prepare-se.
         </p>
 
         <div style={{ display: 'flex', gap: 12, marginTop: 34 }}>

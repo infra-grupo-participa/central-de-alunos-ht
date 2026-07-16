@@ -145,8 +145,8 @@ h3 {
 
 /* -------------------------------------------------------------- Navbar */
 .ht-nav {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 12px;
   padding: 12px 24px;
@@ -207,19 +207,8 @@ h3 {
 }
 @media (max-width: 600px) {
   .ht-nav {
-    grid-template-columns: auto 1fr auto;
     padding: 10px 14px;
     gap: 8px;
-  }
-  .ht-nav-brand strong {
-    display: none;
-  }
-  /* No mobile a aba vira só o ícone (o rótulo continua no aria-label). */
-  .ht-nav-tab {
-    padding: 8px 14px;
-  }
-  .ht-nav-tab-label {
-    display: none;
   }
   .ht-nav-sair .ht-nav-sair-label {
     display: none;
@@ -794,4 +783,506 @@ h3 {
 .ht-pill-off {
   background: var(--ht-surface-2);
   color: var(--ht-text-muted);
+}
+
+/* ============================================================
+   Refatoração — cronograma, exercícios, modal, ficha, workbook
+   ============================================================ */
+
+/* ------------------------------------------------- Cronograma (thumbs) */
+.ht-crono {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 4px 2px 14px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.ht-crono::-webkit-scrollbar {
+  height: 8px;
+}
+.ht-crono::-webkit-scrollbar-thumb {
+  background: var(--ht-surface-2);
+  border-radius: 999px;
+}
+.ht-crono-card {
+  flex: 0 0 232px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--ht-text);
+  background: var(--ht-surface);
+  border: 1px solid var(--ht-border);
+  border-radius: var(--ht-radius);
+  overflow: hidden;
+  transition: border-color 0.15s ease, transform 0.12s ease;
+}
+.ht-crono-card:not(.ht-crono-lock):hover {
+  border-color: var(--ht-orange);
+  transform: translateY(-2px);
+}
+.ht-crono-thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  overflow: hidden;
+}
+.ht-crono-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ht-crono-play {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.45));
+  opacity: 0.92;
+  transition: color 0.15s ease;
+}
+.ht-crono-card:not(.ht-crono-lock):hover .ht-crono-play {
+  color: var(--ht-orange-bright);
+}
+.ht-crono-ok {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(34, 197, 94, 0.92);
+  color: #fff;
+}
+.ht-crono-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px 12px;
+}
+.ht-crono-info strong {
+  font-family: var(--ht-font-display);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.ht-crono-info small {
+  color: var(--ht-text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Aula bloqueada: a thumb existe, mas atrás do vidro — libera às 08h do dia. */
+.ht-crono-lock {
+  cursor: not-allowed;
+}
+.ht-crono-lock .ht-crono-thumb img {
+  filter: blur(7px) saturate(0.5) brightness(0.55);
+  transform: scale(1.06); /* esconde a borda do blur */
+}
+.ht-crono-cadeado {
+  color: var(--ht-text-dim);
+  background: rgba(10, 10, 11, 0.35);
+}
+.ht-crono-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--ht-border);
+  background: var(--ht-surface);
+  color: var(--ht-text-dim);
+  font-size: 13px;
+}
+.ht-crono-timer strong {
+  color: var(--ht-orange);
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------- Exercícios (módulos verticais) */
+.ht-ex-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: var(--ht-radius);
+  border: 1px solid var(--ht-border);
+  background: var(--ht-surface);
+  position: relative;
+  flex-wrap: wrap;
+}
+.ht-ex-num {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-family: var(--ht-font-display);
+  font-weight: 900;
+  font-size: 18px;
+  background: var(--ht-bg-2);
+  color: var(--ht-orange);
+  border: 1px solid var(--ht-border);
+}
+.ht-ex-body {
+  flex: 1;
+  min-width: 220px;
+}
+.ht-ex-body strong {
+  font-size: 15px;
+  display: block;
+}
+.ht-ex-body p {
+  margin: 5px 0 0;
+  color: var(--ht-text-dim);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+/* Bloqueado: o conteúdo REAL fica atrás do blur — dá pra intuir, não pra ler. */
+.ht-ex-lock {
+  overflow: hidden;
+}
+.ht-ex-blur {
+  filter: blur(5.5px);
+  opacity: 0.75;
+  user-select: none;
+  pointer-events: none;
+}
+.ht-ex-lock-label {
+  flex-shrink: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ht-text-muted);
+  border: 1px solid var(--ht-border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--ht-bg-2);
+}
+.ht-ex-ficha {
+  border-color: var(--ht-orange);
+  background: linear-gradient(90deg, rgba(249, 115, 22, 0.14), rgba(249, 115, 22, 0.04));
+}
+
+/* ------------------------------------------------------------- Modal */
+.ht-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(5, 5, 6, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.ht-modal {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  padding: 30px 28px;
+}
+.ht-modal-fechar {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--ht-text-muted);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+.ht-modal-fechar:hover {
+  color: var(--ht-text);
+}
+
+/* --------------------------------------------------- Checkbox e repeater */
+.ht-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--ht-text-dim);
+}
+.ht-check input {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  accent-color: var(--ht-orange);
+  flex-shrink: 0;
+}
+.ht-rep-row {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--ht-border);
+  border-radius: var(--ht-radius-sm);
+  background: var(--ht-bg-2);
+}
+.ht-rep-idx {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-family: var(--ht-font-display);
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--ht-orange);
+  background: var(--ht-surface);
+  border: 1px solid var(--ht-border);
+  margin-top: 22px;
+}
+.ht-rep-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.ht-rep-field span {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ht-text-muted);
+  margin-bottom: 4px;
+}
+.ht-rep-field .ht-input {
+  padding: 10px 12px;
+  font-size: 14px;
+}
+select.ht-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b645f' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+/* ----------------------------------------------------- WhatsApp flutuante */
+.ht-whats-float {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 50;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #25d366;
+  color: #fff;
+  box-shadow: 0 10px 30px rgba(37, 211, 102, 0.35);
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+.ht-whats-float:hover {
+  transform: translateY(-2px) scale(1.04);
+  filter: brightness(1.05);
+}
+
+/* -------------------------------------------------------- CTA carrinho */
+.ht-cta-carrinho {
+  background: linear-gradient(135deg, var(--ht-orange-deep), var(--ht-orange-bright));
+  border: none;
+  animation: ht-pulse 1.8s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------------ Workbook */
+.wb-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 28px 60px;
+  background: var(--ht-bg);
+}
+.wb-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 26px;
+}
+.wb-capa {
+  text-align: center;
+  padding: 46px 20px 40px;
+  border: 1px solid var(--ht-border);
+  border-radius: var(--ht-radius);
+  background: var(--ht-surface);
+  margin-bottom: 30px;
+}
+.wb-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.wb-capa h1 {
+  font-size: clamp(34px, 7vw, 54px);
+  text-transform: uppercase;
+}
+.wb-sub {
+  color: var(--ht-text-dim);
+  margin: 12px 0 0;
+  font-size: 15px;
+}
+.wb-aluno {
+  margin: 18px 0 0;
+  font-weight: 700;
+  color: var(--ht-orange);
+}
+.wb-aula {
+  margin-bottom: 28px;
+  border: 1px solid var(--ht-border);
+  border-radius: var(--ht-radius);
+  background: var(--ht-surface);
+  overflow: hidden;
+  break-inside: avoid;
+}
+.wb-aula-head {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--ht-border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.wb-dia {
+  flex-shrink: 0;
+  font-family: var(--ht-font-display);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ht-orange);
+  border: 1px solid var(--ht-orange);
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+.wb-aula-head h2 {
+  font-size: 20px;
+  text-transform: uppercase;
+}
+.wb-exercicio {
+  padding: 20px 22px;
+}
+.wb-exercicio h3 {
+  font-size: 16px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.wb-objetivo {
+  color: var(--ht-text-dim);
+  font-size: 13.5px;
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+.wb-campo {
+  margin-bottom: 16px;
+}
+.wb-campo > strong {
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ht-text-dim);
+  margin-bottom: 6px;
+}
+.wb-campo p {
+  margin: 0;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+.wb-vazio {
+  color: var(--ht-text-muted);
+  font-style: italic;
+}
+.wb-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.wb-tabela th,
+.wb-tabela td {
+  text-align: left;
+  padding: 8px 10px;
+  border: 1px solid var(--ht-border);
+}
+.wb-tabela th {
+  background: var(--ht-bg-2);
+  font-size: 11.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ht-text-dim);
+}
+.wb-status {
+  margin: 14px 0 0;
+  font-size: 12.5px;
+  color: var(--ht-text-muted);
+}
+.wb-footer {
+  text-align: center;
+  color: var(--ht-text-muted);
+  font-size: 13px;
+  margin-top: 34px;
+}
+.wb-footer p {
+  margin: 4px 0;
+}
+
+/* Impressão: papel branco, sem toolbar/float — o "Salvar como PDF" do browser
+   é o gerador do workbook. */
+@media print {
+  body,
+  .wb-page {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  .wb-toolbar,
+  .ht-whats-float {
+    display: none !important;
+  }
+  .wb-capa,
+  .wb-aula {
+    background: #fff;
+    border-color: #ddd;
+    box-shadow: none;
+  }
+  .wb-capa h1,
+  .wb-aula-head h2,
+  .wb-exercicio h3 {
+    color: #111;
+  }
+  .wb-sub,
+  .wb-objetivo,
+  .wb-campo > strong,
+  .wb-status,
+  .wb-footer {
+    color: #555;
+  }
+  .wb-campo p {
+    color: #111;
+  }
+  .wb-tabela th {
+    background: #f4f4f4;
+    color: #444;
+  }
+  .wb-tabela th,
+  .wb-tabela td {
+    border-color: #ccc;
+  }
+  .wb-dia,
+  .wb-aluno {
+    color: #ea580c;
+    border-color: #ea580c;
+  }
 }

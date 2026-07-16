@@ -1,31 +1,11 @@
 import { isAdmin, requireAuth } from '@/lib/auth.js';
 import { ht, unwrap } from '@/lib/htdb.js';
-import { fichaFormUrl } from '@/lib/env.js';
+import { resolveCohort, carrinhoDoAluno } from '@/lib/cohort.js';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// Cohort do aluno (via profile) ou fallback: cohort ativo mais recente (nao-template).
-async function resolveCohort(profile) {
-  if (profile?.cohort_id) {
-    const c = unwrap(
-      await ht.from('cohorts').select('*').eq('id', profile.cohort_id).maybeSingle()
-    );
-    if (c) return c;
-  }
-  const rows = unwrap(
-    await ht
-      .from('cohorts')
-      .select('*')
-      .eq('status', 'ativo')
-      .or('is_template.is.null,is_template.eq.false')
-      .order('data_inicio', { ascending: false, nullsFirst: false })
-      .limit(1)
-  );
-  return rows?.[0] || null;
-}
-
-// Retorna o "estado do aluno": profile + cohort + settings + ficha.
+// Retorna o "estado do aluno": profile + cohort + settings + ficha + carrinho.
 export async function GET(request) {
   const { user, profile: existing, unauthorized } = await requireAuth(request);
   if (unauthorized) return Response.json({ error: 'nao_autenticado' }, { status: 401 });
@@ -72,12 +52,15 @@ export async function GET(request) {
       );
     }
 
+    // Janela do carrinho do aluno: quem respondeu a ficha entra 15min antes.
+    const carrinho = carrinhoDoAluno(cohort, ficha?.status === 'respondida');
+
     return Response.json({
       profile,
       cohort,
       settings,
       ficha,
-      ficha_url: fichaFormUrl(user),
+      carrinho,
       // O front usa isso so pra decidir o que MOSTRAR (aba Metricas). Quem
       // protege os dados de verdade e o requireAdmin nas rotas /api/admin/*.
       is_admin: await isAdmin(user),
